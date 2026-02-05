@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Car, Shield, Smartphone, CheckCircle } from "lucide-react";
+import { Car, Shield, Smartphone, CheckCircle, Award } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -185,6 +185,49 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+        {/* Stats Section */}
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="grid md:grid-cols-3 gap-8 text-center">
+              <div>
+                <div className="flex justify-center mb-4">
+                  <Award className="h-12 w-12 text-primary" />
+                </div>
+                <div className="text-4xl font-bold mb-2">30+ ans</div>
+                <div className="text-muted-foreground">d'expérience</div>
+              </div>
+              <div>
+                <div className="flex justify-center mb-4">
+                  <Car className="h-12 w-12 text-primary" />
+                </div>
+                <div className="text-4xl font-bold mb-2">800</div>
+                <div className="text-muted-foreground">employés</div>
+              </div>
+              <div>
+                <div className="flex justify-center mb-4">
+                  <CheckCircle className="h-12 w-12 text-primary" />
+                </div>
+                <div className="text-4xl font-bold mb-2">1M+</div>
+                <div className="text-muted-foreground">clients satisfaits</div>
+              </div>
+            </div>
+          </div>
+        </section>
+        {/* CTA Section */}
+        <section className="py-16 bg-slate-900 text-white">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold mb-4">
+              Prêt à trouver votre véhicule ?
+            </h2>
+            <p className="text-slate-300 mb-8 max-w-2xl mx-auto">
+              Parcourez notre catalogue en ligne et déposez votre dossier en
+              quelques clics
+            </p>
+            <Button size="lg" variant="secondary" asChild>
+              <Link href="/search">Voir nos véhicules disponibles</Link>
+            </Button>
           </div>
         </section>
       </main>
