@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
-import { Car } from "lucide-react";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Car, Shield, Smartphone } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -32,6 +38,55 @@ export default function HomePage() {
                   <Link href="/register">Créer un compte</Link>
                 </Button>
               </div>
+            </div>
+          </div>
+        </section>
+        {/* Features Section */}
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center mb-12">
+              Pourquoi choisir M-Motors ?
+            </h2>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <Card>
+                <CardHeader>
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                    <Car className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle>Large Choix</CardTitle>
+                  <CardDescription>
+                    Plus de 20 véhicules disponibles à la vente ou à la location
+                    avec des options variées
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                    <Shield className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle>Qualité Garantie</CardTitle>
+                  <CardDescription>
+                    Tous nos véhicules sont contrôlés, entretenus et garantis
+                    pour votre sécurité
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                    <Smartphone className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle>100% Digital</CardTitle>
+                  <CardDescription>
+                    Dossiers dématérialisés et suivi en temps réel de votre
+                    demande en ligne
+                  </CardDescription>
+                </CardHeader>
+              </Card>
             </div>
           </div>
         </section>
