@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Car, Shield, Smartphone } from "lucide-react";
+import { Car, Shield, Smartphone, CheckCircle } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -87,6 +87,103 @@ export default function HomePage() {
                   </CardDescription>
                 </CardHeader>
               </Card>
+            </div>
+          </div>
+        </section>
+        {/* Services Section */}
+        <section className="py-16 bg-slate-50">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-3xl font-bold text-center mb-4">
+                Nos Services
+              </h2>
+              <p className="text-center text-muted-foreground mb-12">
+                Un accompagnement complet pour votre projet automobile
+              </p>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="flex gap-4">
+                  <div className="shrink-0">
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">
+                      Vente de véhicules d'occasion
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Large gamme de marques et modèles, tous contrôlés et
+                      garantis
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="shrink-0">
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">
+                      Location longue durée avec option d'achat
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Flexibilité et sérénité avec nos formules tout compris
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="shrink-0">
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">Service après-vente</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Entretien, réparations et assistance pour votre véhicule
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="shrink-0">
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">
+                      Solutions de financement
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Partenariats avec organismes financiers pour faciliter
+                      votre achat
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="shrink-0">
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">
+                      Reprise de votre ancien véhicule
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Estimation gratuite et reprise au meilleur prix
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="shrink-0">
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">Essai routier</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Testez le véhicule avant de vous décider
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
