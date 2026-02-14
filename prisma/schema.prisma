@@ -12,3 +12,149 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model Utilisateur {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  mot_de_passe String
+  nom          String
+  prenom       String
+  telephone    String
+  adresse      String
+  role         Role      @default(client)
+  created_at   DateTime  @default(now())
+  dossiers     Dossier[]
+
+  @@index([email])
+  @@map("utilisateurs")
+}
+
+model Vehicule {
+  id                    String         @id @default(cuid())
+  marque                String
+  modele                String
+  motorisation          String
+  kilometrage           Int
+  annee                 Int
+  prix_vente            Decimal?       @db.Decimal(10, 2)
+  prix_location_mensuel Decimal?       @db.Decimal(10, 2)
+  type_offre            TypeOffre
+  statut                StatutVehicule @default(disponible)
+  photos                String[]
+  description           String
+  options               String[]
+  carburant             String?
+  transmission          String?
+  puissance             String?
+  couleur               String?
+  created_at            DateTime       @default(now())
+  dossiers              Dossier[]
+
+  @@index([marque, modele])
+  @@index([statut])
+  @@index([type_offre])
+  @@map("vehicules")
+}
+
+model Option {
+  id           String   @id @default(cuid())
+  nom          String   @unique
+  prix_mensuel Decimal  @db.Decimal(10, 2)
+  description  String
+  created_at   DateTime @default(now())
+
+  @@map("options")
+}
+
+model Dossier {
+  id                String           @id @default(cuid())
+  client_id         String
+  vehicule_id       String
+  type_dossier      TypeDossier
+  statut            StatutDossier    @default(brouillon)
+  date_creation     DateTime         @default(now())
+  date_modification DateTime         @updatedAt
+  commentaire_admin String?
+  contrat_location  ContratLocation?
+  documents         Document[]
+  client            Utilisateur      @relation(fields: [client_id], references: [id], onDelete: Cascade)
+  vehicule          Vehicule         @relation(fields: [vehicule_id], references: [id])
+
+  @@index([client_id])
+  @@index([vehicule_id])
+  @@index([statut])
+  @@map("dossiers")
+}
+
+model Document {
+  id            String         @id @default(cuid())
+  dossier_id    String
+  type_document TypeDocument
+  fichier_nom   String
+  fichier_type  String
+  statut        StatutDocument @default(en_attente)
+  date_upload   DateTime       @default(now())
+  commentaire   String?
+  dossier       Dossier        @relation(fields: [dossier_id], references: [id], onDelete: Cascade)
+
+  @@index([dossier_id])
+  @@map("documents")
+}
+
+model ContratLocation {
+  id               String   @id @default(cuid())
+  dossier_id       String   @unique
+  duree_mois       Int
+  option_achat     Boolean  @default(false)
+  prix_rachat      Decimal? @db.Decimal(10, 2)
+  options_incluses String[]
+  created_at       DateTime @default(now())
+  dossier          Dossier  @relation(fields: [dossier_id], references: [id], onDelete: Cascade)
+
+  @@map("contrats_location")
+}
+
+enum TypeOffre {
+  vente
+  location
+  vente_location
+}
+
+enum StatutVehicule {
+  disponible
+  reserve
+  vendu
+  loue
+  maintenance
+}
+
+enum Role {
+  client
+  admin
+}
+
+enum StatutDossier {
+  brouillon
+  soumis
+  en_cours
+  valide
+  refuse
+}
+
+enum TypeDossier {
+  achat
+  location
+}
+
+enum TypeDocument {
+  identite
+  justificatif_domicile
+  justificatif_revenus
+  permis_conduire
+}
+
+enum StatutDocument {
+  en_attente
+  valide
+  refuse
+}
