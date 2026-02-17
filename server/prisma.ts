@@ -8,28 +8,15 @@
 
 import { PrismaClient } from "@/lib/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
 
 declare global {
   var prisma: PrismaClient | undefined;
-  var pool: Pool | undefined;
 }
 
-// Create connection pool
-const pool =
-  global.pool ||
-  new Pool({
-    connectionString: process.env.DATABASE_URL,
-  });
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
 
-if (process.env.NODE_ENV !== "production") {
-  global.pool = pool;
-}
-
-// Create Prisma adapter
-const adapter = new PrismaPg(pool);
-
-// Create Prisma Client
 export const prisma =
   global.prisma ||
   new PrismaClient({
