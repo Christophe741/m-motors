@@ -50,8 +50,28 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
-    // TODO: Appeler l'API d'inscription
-    setLoading(false);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { confirmPassword: _confirmPassword, ...dataToSend } = formData;
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dataToSend),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        alert(data.error || "Erreur lors de l'inscription");
+        return;
+      }
+
+      alert("Compte créé avec succès !");
+    } catch {
+      alert("Erreur serveur, veuillez réessayer");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
