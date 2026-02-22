@@ -6,14 +6,7 @@ export async function POST(request: NextRequest) {
     const userData = await request.json();
 
     // Validation
-    if (!userData.email || !userData.mot_de_passe) {
-      return NextResponse.json(
-        { success: false, error: 'Email et mot de passe requis' },
-        { status: 400 }
-      );
-    }
-
-    if (!userData.nom || !userData.prenom || !userData.telephone || !userData.adresse) {
+    if (!userData.email || !userData.mot_de_passe || !userData.nom || !userData.prenom || !userData.telephone || !userData.adresse) {
       return NextResponse.json(
         { success: false, error: 'Tous les champs sont requis' },
         { status: 400 }
