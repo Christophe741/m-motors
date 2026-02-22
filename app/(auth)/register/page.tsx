@@ -36,7 +36,7 @@ export default function RegisterPage() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
     if (formData.mot_de_passe !== formData.confirmPassword) {
