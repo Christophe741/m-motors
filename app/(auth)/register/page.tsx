@@ -51,7 +51,6 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword: _confirmPassword, ...dataToSend } = formData;
       const res = await fetch("/api/auth/register", {
         method: "POST",
