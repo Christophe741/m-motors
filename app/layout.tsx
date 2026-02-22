@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "M-Motors - Vente et Location de Véhicules d'Occasion",
@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.variable} font-sans`}>{children}</body>
     </html>
   );
 }
