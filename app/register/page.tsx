@@ -18,9 +18,11 @@ import {
 } from "@/components/ui/card";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     mot_de_passe: "",
@@ -53,28 +55,15 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
-    try {
-      const { confirmPassword: _confirmPassword, ...dataToSend } = formData;
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dataToSend),
-      });
+    const { confirmPassword: _confirmPassword, ...registerData } = formData;
+    const result = await register(registerData);
 
-      const data = await res.json();
-
-      if (!data.success) {
-        toast.error(data.error || "Erreur lors de l'inscription");
-        return;
-      }
-
-      toast.success("Compte créé avec succès !");
+    if (result.success) {
       router.push("/");
-    } catch {
-      toast.error("Erreur serveur, veuillez réessayer");
-    } finally {
-      setLoading(false);
+    } else {
+      toast.error(result.error || "Erreur lors de l'inscription");
     }
+    setLoading(false);
   };
 
   return (
