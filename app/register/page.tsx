@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -16,8 +17,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { UserPlus } from "lucide-react";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: "",
     mot_de_passe: "",
@@ -40,12 +43,12 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (formData.mot_de_passe !== formData.confirmPassword) {
-      alert("Les mots de passe ne correspondent pas");
+      toast.error("Les mots de passe ne correspondent pas");
       return;
     }
 
     if (formData.mot_de_passe.length < 6) {
-      alert("Le mot de passe doit contenir au moins 6 caractères");
+      toast.error("Le mot de passe doit contenir au moins 6 caractères");
       return;
     }
 
@@ -61,13 +64,14 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!data.success) {
-        alert(data.error || "Erreur lors de l'inscription");
+        toast.error(data.error || "Erreur lors de l'inscription");
         return;
       }
 
-      alert("Compte créé avec succès !");
+      toast.success("Compte créé avec succès !");
+      router.push("/");
     } catch {
-      alert("Erreur serveur, veuillez réessayer");
+      toast.error("Erreur serveur, veuillez réessayer");
     } finally {
       setLoading(false);
     }
