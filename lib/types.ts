@@ -26,3 +26,10 @@ export interface RegisterData {
   telephone: string;
   adresse: string;
 }
+
+// Type du contexte d'authentification
+export interface AuthContextType {
+  user: UtilisateurSansPassword | null;
+  loading: boolean;
+  register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
+}
