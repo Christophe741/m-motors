@@ -41,6 +41,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
+  const login = async (
+    email: string,
+    password: string,
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.user) {
+        setUser(data.user);
+        const userJson = JSON.stringify(data.user);
+        localStorage.setItem("mmotors_user", userJson);
+        document.cookie = `mmotors_user=${encodeURIComponent(userJson)}; path=/; max-age=${60 * 60 * 24 * 7}`;
+        toast.success(`Bienvenue ${data.user.prenom} !`);
+        return { success: true };
+      }
+
+      return {
+        success: false,
+        error: data.error || "Email ou mot de passe incorrect",
+      };
+    } catch (error) {
+      console.error("Login error:", error);
+      return {
+        success: false,
+        error: "Une erreur est survenue lors de la connexion",
+      };
+    }
+  };
+
   const register = async (
     userData: RegisterData,
   ): Promise<{ success: boolean; error?: string }> => {
@@ -76,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, register }}>
+    <AuthContext.Provider value={{ user, loading, login, register }}>
       {children}
     </AuthContext.Provider>
   );

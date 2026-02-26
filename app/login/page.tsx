@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -18,14 +21,28 @@ import {
 import { LogIn } from "lucide-react";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { login, user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (user) {
+      router.push(user.role === "admin" ? "/admin/vehicles" : "/");
+    }
+  }, [user, router]);
+
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: implanter la logique de connexion
+
+    const result = await login(email, password);
+
+    if (!result.success) {
+      toast.error(result.error || "Erreur de connexion");
+    }
+
     setLoading(false);
   };
 

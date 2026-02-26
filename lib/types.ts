@@ -31,5 +31,11 @@ export interface RegisterData {
 export interface AuthContextType {
   user: UtilisateurSansPassword | null;
   loading: boolean;
-  register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  register: (
+    userData: RegisterData,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
