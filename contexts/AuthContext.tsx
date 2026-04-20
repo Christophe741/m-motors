@@ -110,8 +110,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem("mmotors_user");
+    document.cookie = "mmotors_user=; path=/; max-age=0";
+    toast.success("Vous êtes déconnecté.");
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

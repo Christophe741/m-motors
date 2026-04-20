@@ -38,4 +38,5 @@ export interface AuthContextType {
   register: (
     userData: RegisterData,
   ) => Promise<{ success: boolean; error?: string }>;
+  logout: () => void;
 }
