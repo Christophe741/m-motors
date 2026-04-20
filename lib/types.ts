@@ -1,5 +1,47 @@
-// Types pour l'authentification
+// Types pour les offres et statuts
+export type TypeOffre = "vente" | "location" | "vente_location";
+export type StatutVehicule =
+  | "disponible"
+  | "reserve"
+  | "vendu"
+  | "loue"
+  | "maintenance";
 export type Role = "client" | "admin";
+
+// Interface Véhicule
+export interface Vehicule {
+  id: string;
+  marque: string;
+  modele: string;
+  motorisation: string;
+  kilometrage: number;
+  annee: number;
+  prix_vente?: number | null;
+  prix_location_mensuel?: number | null;
+  type_offre: TypeOffre;
+  statut: StatutVehicule;
+  photos: string[];
+  description: string;
+  options?: string[];
+  carburant?: string;
+  transmission?: string;
+  puissance?: string;
+  couleur?: string;
+  created_at: string;
+}
+
+// Interface pour les filtres de véhicules
+export interface VehicleFilters {
+  type_offre?: "vente" | "location";
+  marque?: string;
+  prix_max?: number;
+  annee_min?: number;
+  kilometrage_max?: number;
+  carburant?: string;
+  transmission?: string;
+  search?: string;
+  statut?: StatutVehicule;
+}
 
 // Interface Utilisateur
 export interface Utilisateur {
