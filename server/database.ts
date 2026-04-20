@@ -133,6 +133,15 @@ export async function getVehicles(filters?: VehicleFilters): Promise<Vehicule[]>
   })) as Vehicule[];
 }
 
+export async function getAllMarques(): Promise<string[]> {
+  const vehicles = await prisma.vehicule.findMany({
+    select: { marque: true },
+    distinct: ["marque"],
+    orderBy: { marque: "asc" },
+  });
+  return vehicles.map((v) => v.marque);
+}
+
 export async function getVehicleById(id: string): Promise<Vehicule | null> {
   const vehicle = await prisma.vehicule.findUnique({ where: { id } });
 
