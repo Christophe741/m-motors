@@ -16,30 +16,23 @@ import { toast } from "sonner";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function getInitialUser(): UtilisateurSansPassword | null {
-  if (typeof window === "undefined") return null;
-  const storedUser = localStorage.getItem("mmotors_user");
-  if (!storedUser) return null;
-  try {
-    return JSON.parse(storedUser);
-  } catch {
-    localStorage.removeItem("mmotors_user");
-    return null;
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UtilisateurSansPassword | null>(
-    getInitialUser,
-  );
-  const loading = false;
+  const [user, setUser] = useState<UtilisateurSansPassword | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      const userJson = JSON.stringify(user);
-      document.cookie = `mmotors_user=${encodeURIComponent(userJson)}; path=/; max-age=${60 * 60 * 24 * 7}`;
+    const storedUser = localStorage.getItem("mmotors_user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+        document.cookie = `mmotors_user=${encodeURIComponent(storedUser)}; path=/; max-age=${60 * 60 * 24 * 7}`;
+      } catch {
+        localStorage.removeItem("mmotors_user");
+        document.cookie = "mmotors_user=; path=/; max-age=0";
+      }
     }
-  }, [user]);
+    setLoading(false);
+  }, []);
 
   const login = async (
     email: string,
