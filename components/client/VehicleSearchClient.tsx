@@ -26,7 +26,7 @@ export default function VehicleSearchClient({
   marques,
 }: VehicleSearchClientProps) {
   const [vehicles, setVehicles] = useState<Vehicule[]>(initialVehicles);
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<VehicleFilters>({});
   const [isLoading, setIsLoading] = useState(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);

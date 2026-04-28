@@ -17,13 +17,13 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-linear-to-b from-slate-50 to-white py-20">
+        <section className="bg-linear-to-b from-slate-50 to-white py-10 md:py-20">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
-              <h1 className="text-5xl font-bold text-slate-900 mb-6">
+              <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">
                 Trouvez votre véhicule idéal
               </h1>
-              <p className="text-xl text-slate-600 mb-8">
+              <p className="text-lg md:text-xl text-slate-600 mb-8">
                 Spécialiste en vente et location longue durée de véhicules
                 d'occasion depuis 1987. Plus de 1 million de clients nous font
                 confiance.
@@ -43,9 +43,9 @@ export default function HomePage() {
           </div>
         </section>
         {/* Features Section */}
-        <section className="py-16 bg-white">
+        <section className="py-8 md:py-16 bg-white">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">
               Pourquoi choisir M-Motors ?
             </h2>
 
@@ -92,10 +92,10 @@ export default function HomePage() {
           </div>
         </section>
         {/* Services Section */}
-        <section className="py-16 bg-slate-50">
+        <section className="py-8 md:py-16 bg-slate-50">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl font-bold text-center mb-4">
+              <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">
                 Nos Services
               </h2>
               <p className="text-center text-muted-foreground mb-12">
@@ -189,7 +189,7 @@ export default function HomePage() {
           </div>
         </section>
         {/* Stats Section */}
-        <section className="py-16 bg-white">
+        <section className="py-8 md:py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-3 gap-8 text-center">
               <div>
@@ -217,9 +217,9 @@ export default function HomePage() {
           </div>
         </section>
         {/* CTA Section */}
-        <section className="py-16 bg-slate-900 text-white">
+        <section className="py-8 md:py-16 bg-slate-900 text-white">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
               Prêt à trouver votre véhicule ?
             </h2>
             <p className="text-slate-300 mb-8 max-w-2xl mx-auto">
