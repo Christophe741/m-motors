@@ -4,7 +4,7 @@
  * Cette couche fournit une abstraction pour toutes les opérations de base de données.
  */
 
-import { Utilisateur, Vehicule, VehicleFilters } from '@/lib/types';
+import { Dossier, Utilisateur, Vehicule, VehicleFilters } from '@/lib/types';
 import { prisma } from './prisma';
 import bcrypt from 'bcrypt';
 import type { Decimal } from '@prisma/client/runtime/client';
@@ -153,4 +153,27 @@ export async function getVehicleById(id: string): Promise<Vehicule | null> {
     prix_location_mensuel: toNumber(vehicle.prix_location_mensuel),
     created_at: vehicle.created_at.toISOString(),
   } as Vehicule;
+}
+
+// ============================================
+// DOSSIER OPERATIONS
+// ============================================
+
+export async function getDossierById(id: string): Promise<Dossier | null> {
+  const dossier = await prisma.dossier.findUnique({
+    where: { id },
+    include: { documents: true },
+  });
+
+  if (!dossier) return null;
+
+  return {
+    ...dossier,
+    date_creation: dossier.date_creation.toISOString(),
+    date_modification: dossier.date_modification.toISOString(),
+    documents: dossier.documents.map((doc) => ({
+      ...doc,
+      date_upload: doc.date_upload.toISOString(),
+    })),
+  } as Dossier;
 }
