@@ -7,6 +7,10 @@ export type StatutVehicule =
   | "loue"
   | "maintenance";
 export type Role = "client" | "admin";
+export type StatutDossier = "brouillon" | "soumis" | "en_cours" | "valide" | "refuse";
+export type TypeDossier = "achat" | "location";
+export type TypeDocument = "identite" | "justificatif_domicile" | "justificatif_revenus" | "permis_conduire";
+export type StatutDocument = "en_attente" | "valide" | "refuse";
 
 // Interface Véhicule
 export interface Vehicule {
@@ -67,6 +71,31 @@ export interface RegisterData {
   prenom: string;
   telephone: string;
   adresse: string;
+}
+
+// Interface Document
+export interface Document {
+  id: string;
+  dossier_id: string;
+  type_document: TypeDocument;
+  fichier_nom: string;
+  fichier_type: string;
+  statut: StatutDocument;
+  date_upload: string;
+  commentaire?: string;
+}
+
+// Interface Dossier
+export interface Dossier {
+  id: string;
+  client_id: string;
+  vehicule_id: string;
+  type_dossier: TypeDossier;
+  statut: StatutDossier;
+  date_creation: string;
+  date_modification: string;
+  documents: Document[];
+  commentaire_admin?: string;
 }
 
 // Type du contexte d'authentification
