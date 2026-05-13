@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/server/prisma';
 
 export async function POST(request: NextRequest) {
+  const userCookie = request.cookies.get('mmotors_user');
+  if (!userCookie) {
+    return NextResponse.json({ success: false, error: 'Non autorisé' }, { status: 401 });
+  }
+
   try {
     const data = await request.json();
 

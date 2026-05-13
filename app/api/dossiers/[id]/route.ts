@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDossierById } from '@/server/database';
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const userCookie = request.cookies.get('mmotors_user');
+  if (!userCookie) {
+    return NextResponse.json({ success: false, error: 'Non autorisé' }, { status: 401 });
+  }
+
   const { id } = await params;
   try {
     const dossier = await getDossierById(id);
