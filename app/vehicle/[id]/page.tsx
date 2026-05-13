@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import VehicleImageGallery from "@/components/client/VehicleImageGallery";
+import VehicleDossierActions from "@/components/client/VehicleDossierActions";
 import { getVehicleById } from "@/server/database";
 import { formatPrice, formatKilometrage } from "@/lib/utils";
 import {
@@ -111,6 +112,8 @@ export default async function VehicleDetailPage({
                   )}
                 </CardContent>
               </Card>
+
+              <VehicleDossierActions vehicleId={vehicle.id} canBuy={canBuy} />
 
               <Card>
                 <CardHeader>
