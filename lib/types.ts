@@ -73,6 +73,26 @@ export interface RegisterData {
   adresse: string;
 }
 
+// Interface Option
+export interface Option {
+  id: string;
+  nom: string;
+  prix_mensuel: number;
+  description: string;
+  created_at: string;
+}
+
+// Interface ContratLocation
+export interface ContratLocation {
+  id: string;
+  dossier_id: string;
+  duree_mois: number;
+  option_achat: boolean;
+  prix_rachat?: number | null;
+  options_incluses: string[];
+  created_at: string;
+}
+
 // Interface Document
 export interface Document {
   id: string;
@@ -95,6 +115,7 @@ export interface Dossier {
   date_creation: string;
   date_modification: string;
   documents: Document[];
+  contrat_location?: ContratLocation;
   commentaire_admin?: string;
 }
 
