@@ -113,7 +113,7 @@ export default async function VehicleDetailPage({
                 </CardContent>
               </Card>
 
-              <VehicleDossierActions vehicleId={vehicle.id} canBuy={canBuy} />
+              <VehicleDossierActions vehicleId={vehicle.id} canBuy={canBuy} canRent={canRent} />
 
               <Card>
                 <CardHeader>

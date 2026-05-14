@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatPrice, formatKilometrage } from '@/lib/utils';
-import { TypeDocument, Vehicule } from '@/lib/types';
+import { TypeDocument, TypeDossier, Vehicule, Option } from '@/lib/types';
 import { ArrowLeft, FileText, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -27,11 +27,19 @@ export default function CreateDossierClient() {
   const { user, loading: authLoading } = useAuth();
 
   const vehicleId = searchParams.get('vehicleId');
+  const typeDossier = (searchParams.get('type') || 'achat') as TypeDossier;
 
   const [vehicle, setVehicle] = useState<Vehicule | null>(null);
   const [documents, setDocuments] = useState<{ [key in TypeDocument]?: File }>({});
   const [loading, setLoading] = useState(false);
   const [vehicleLoading, setVehicleLoading] = useState(true);
+
+  // États spécifiques à la location
+  const [options, setOptions] = useState<Option[]>([]);
+  const [duree, setDuree] = useState(24);
+  const [optionAchat, setOptionAchat] = useState(true);
+  const [prixRachat, setPrixRachat] = useState('');
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -59,6 +67,24 @@ export default function CreateDossierClient() {
     fetchVehicle();
   }, [vehicleId]);
 
+  useEffect(() => {
+    async function fetchOptions() {
+      try {
+        const response = await fetch('/api/options');
+        if (response.ok) {
+          const data: Option[] = await response.json();
+          setOptions(data);
+          setSelectedOptions(data.map((o) => o.id));
+        }
+      } catch (error) {
+        console.error('Error fetching options:', error);
+      }
+    }
+    if (typeDossier === 'location') {
+      fetchOptions();
+    }
+  }, [typeDossier]);
+
   if (authLoading || !user || vehicleLoading || !vehicle || !vehicleId) {
     return null;
   }
@@ -71,6 +97,17 @@ export default function CreateDossierClient() {
     }
   };
 
+  const toggleOption = (id: string) => {
+    setSelectedOptions((prev) =>
+      prev.includes(id) ? prev.filter((o) => o !== id) : [...prev, id]
+    );
+  };
+
+  const totalOptions = selectedOptions.reduce((sum, id) => {
+    const opt = options.find((o) => o.id === id);
+    return sum + (opt?.prix_mensuel || 0);
+  }, 0);
+
   const submitDossier = async () => {
     const missingDocs = documentTypes.filter((dt) => !documents[dt.value]);
     if (missingDocs.length > 0) {
@@ -81,19 +118,30 @@ export default function CreateDossierClient() {
     setLoading(true);
 
     try {
+      const body: Record<string, unknown> = {
+        client_id: user.id,
+        vehicule_id: vehicleId,
+        type_dossier: typeDossier,
+        documents: Object.entries(documents).map(([type, file]) => ({
+          type_document: type as TypeDocument,
+          fichier_nom: (file as File).name,
+          fichier_type: (file as File).type,
+        })),
+      };
+
+      if (typeDossier === 'location') {
+        body.contrat_location = {
+          duree_mois: duree,
+          option_achat: optionAchat,
+          prix_rachat: prixRachat ? Number(prixRachat) : null,
+          options_incluses: selectedOptions,
+        };
+      }
+
       const response = await fetch('/api/dossiers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_id: user.id,
-          vehicule_id: vehicleId,
-          type_dossier: 'achat',
-          documents: Object.entries(documents).map(([type, file]) => ({
-            type_document: type as TypeDocument,
-            fichier_nom: (file as File).name,
-            fichier_type: (file as File).type,
-          })),
-        }),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
@@ -125,7 +173,9 @@ export default function CreateDossierClient() {
 
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Déposer un dossier d&apos;achat</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            Déposer un dossier {typeDossier === 'achat' ? "d'achat" : 'de location'}
+          </h1>
           <p className="text-muted-foreground">
             {vehicle.marque} {vehicle.modele} — {vehicle.motorisation}
           </p>
@@ -148,14 +198,109 @@ export default function CreateDossierClient() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-muted-foreground">Prix d&apos;achat</div>
+                  <div className="text-sm text-muted-foreground">
+                    {typeDossier === 'achat' ? "Prix d'achat" : 'Location/mois'}
+                  </div>
                   <div className="text-2xl font-bold">
-                    {formatPrice(vehicle.prix_vente || 0)}
+                    {formatPrice(
+                      typeDossier === 'achat'
+                        ? vehicle.prix_vente || 0
+                        : vehicle.prix_location_mensuel || 0
+                    )}
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
+
+          {typeDossier === 'location' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Options de location</CardTitle>
+                <CardDescription>Personnalisez votre contrat</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="duree">Durée (mois)</Label>
+                    <select
+                      id="duree"
+                      value={duree}
+                      onChange={(e) => setDuree(Number(e.target.value))}
+                      className="w-full border rounded-md px-3 py-2 text-sm"
+                    >
+                      <option value={12}>12 mois</option>
+                      <option value={24}>24 mois</option>
+                      <option value={36}>36 mois</option>
+                      <option value={48}>48 mois</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="option_achat">Option d&apos;achat</Label>
+                    <select
+                      id="option_achat"
+                      value={optionAchat ? 'oui' : 'non'}
+                      onChange={(e) => setOptionAchat(e.target.value === 'oui')}
+                      className="w-full border rounded-md px-3 py-2 text-sm"
+                    >
+                      <option value="oui">Oui</option>
+                      <option value="non">Non</option>
+                    </select>
+                  </div>
+                </div>
+
+                {optionAchat && (
+                  <div className="space-y-2">
+                    <Label htmlFor="prix_rachat">Prix de rachat en fin de contrat (optionnel)</Label>
+                    <Input
+                      id="prix_rachat"
+                      type="number"
+                      placeholder="Ex: 15000"
+                      value={prixRachat}
+                      onChange={(e) => setPrixRachat(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                {options.length > 0 && (
+                  <div>
+                    <Label className="mb-3 block">Services inclus</Label>
+                    <div className="space-y-2">
+                      {options.map((option) => (
+                        <label
+                          key={option.id}
+                          className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedOptions.includes(option.id)}
+                            onChange={() => toggleOption(option.id)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-medium">{option.nom}</span>
+                              <span className="text-sm font-semibold">
+                                +{formatPrice(option.prix_mensuel)}/mois
+                              </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{option.description}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                    <div className="mt-4 p-3 bg-slate-100 rounded-lg flex justify-between items-center">
+                      <span className="font-medium">Total mensuel avec options</span>
+                      <span className="text-xl font-bold">
+                        {formatPrice((vehicle.prix_location_mensuel || 0) + totalOptions)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>
