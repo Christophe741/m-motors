@@ -4,7 +4,7 @@
  * Cette couche fournit une abstraction pour toutes les opérations de base de données.
  */
 
-import { Dossier, Utilisateur, Vehicule, VehicleFilters } from '@/lib/types';
+import { Dossier, Option, Utilisateur, Vehicule, VehicleFilters } from '@/lib/types';
 import { prisma } from './prisma';
 import bcrypt from 'bcrypt';
 import type { Decimal } from '@prisma/client/runtime/client';
@@ -162,7 +162,7 @@ export async function getVehicleById(id: string): Promise<Vehicule | null> {
 export async function getDossierById(id: string): Promise<Dossier | null> {
   const dossier = await prisma.dossier.findUnique({
     where: { id },
-    include: { documents: true },
+    include: { documents: true, contrat_location: true },
   });
 
   if (!dossier) return null;
@@ -175,5 +175,26 @@ export async function getDossierById(id: string): Promise<Dossier | null> {
       ...doc,
       date_upload: doc.date_upload.toISOString(),
     })),
+    contrat_location: dossier.contrat_location ? {
+      ...dossier.contrat_location,
+      prix_rachat: toNumber(dossier.contrat_location.prix_rachat),
+      created_at: dossier.contrat_location.created_at.toISOString(),
+    } : undefined,
   } as Dossier;
+}
+
+// ============================================
+// OPTION OPERATIONS
+// ============================================
+
+export async function getAllOptions(): Promise<Option[]> {
+  const options = await prisma.option.findMany({
+    orderBy: { nom: 'asc' },
+  });
+
+  return options.map((o) => ({
+    ...o,
+    prix_mensuel: toNumber(o.prix_mensuel) as number,
+    created_at: o.created_at.toISOString(),
+  }));
 }

@@ -31,8 +31,11 @@ export async function POST(request: NextRequest) {
             statut: 'en_attente',
           })),
         },
+        ...(data.contrat_location && {
+          contrat_location: { create: data.contrat_location },
+        }),
       },
-      include: { documents: true },
+      include: { documents: true, contrat_location: true },
     });
 
     return NextResponse.json({ success: true, data: dossier });
