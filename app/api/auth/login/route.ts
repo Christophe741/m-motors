@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserByEmail, verifyPassword } from '@/server/database';
+import { signToken } from '@/lib/jwt';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,12 +31,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const token = await signToken({ sub: user.id, role: user.role });
+
     const { mot_de_passe: _mot_de_passe, ...userWithoutPassword } = user;
 
-    return NextResponse.json({
-      success: true,
-      user: userWithoutPassword,
+    const response = NextResponse.json({ success: true, user: userWithoutPassword });
+    response.cookies.set('mmotors_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
     });
+
+    return response;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(

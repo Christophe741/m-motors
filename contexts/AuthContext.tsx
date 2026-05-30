@@ -25,10 +25,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
-        document.cookie = `mmotors_user=${encodeURIComponent(storedUser)}; path=/; max-age=${60 * 60 * 24 * 7}`;
       } catch {
         localStorage.removeItem("mmotors_user");
-        document.cookie = "mmotors_user=; path=/; max-age=0";
       }
     }
     setLoading(false);
@@ -49,9 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (data.success && data.user) {
         setUser(data.user);
-        const userJson = JSON.stringify(data.user);
-        localStorage.setItem("mmotors_user", userJson);
-        document.cookie = `mmotors_user=${encodeURIComponent(userJson)}; path=/; max-age=${60 * 60 * 24 * 7}`;
+        localStorage.setItem("mmotors_user", JSON.stringify(data.user));
         toast.success(`Bienvenue ${data.user.prenom} !`);
         return { success: true };
       }
@@ -83,9 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (data.success && data.user) {
         setUser(data.user);
-        const userJson = JSON.stringify(data.user);
-        localStorage.setItem("mmotors_user", userJson);
-        document.cookie = `mmotors_user=${encodeURIComponent(userJson)}; path=/; max-age=${60 * 60 * 24 * 7}`;
+        localStorage.setItem("mmotors_user", JSON.stringify(data.user));
         toast.success("Compte créé avec succès !");
         return { success: true };
       }
@@ -103,10 +97,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
     localStorage.removeItem("mmotors_user");
-    document.cookie = "mmotors_user=; path=/; max-age=0";
     toast.success("Vous êtes déconnecté.");
   };
 

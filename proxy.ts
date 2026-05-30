@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifyToken } from '@/lib/jwt';
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const userCookie = request.cookies.get('mmotors_user');
+  const tokenCookie = request.cookies.get('mmotors_token');
   let user = null;
 
-  if (userCookie) {
-    try {
-      user = JSON.parse(decodeURIComponent(userCookie.value));
-    } catch {
+  if (tokenCookie) {
+    user = await verifyToken(tokenCookie.value);
+    if (!user) {
       const response = NextResponse.redirect(new URL('/login', request.url));
-      response.cookies.delete('mmotors_user');
+      response.cookies.delete('mmotors_token');
       return response;
     }
   }
