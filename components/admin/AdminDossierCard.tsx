@@ -8,7 +8,7 @@ import { FileText, Eye } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { Dossier, StatutDossier, Document } from '@/lib/types';
 
-interface DossierAdmin extends Dossier {
+export interface DossierAdmin extends Dossier {
   client: { prenom: string; nom: string; email: string } | null;
   vehicule: { marque: string; modele: string } | null;
 }
