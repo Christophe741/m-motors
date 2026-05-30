@@ -1,5 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAllDossiers, getDossiersByClientId } from '@/server/database';
 import { prisma } from '@/server/prisma';
+
+export async function GET(request: NextRequest) {
+  try {
+    const clientId = request.nextUrl.searchParams.get('clientId');
+
+    const dossiers = clientId
+      ? await getDossiersByClientId(clientId)
+      : await getAllDossiers();
+
+    return NextResponse.json({ success: true, data: dossiers, count: dossiers.length });
+  } catch (error) {
+    console.error('Error fetching dossiers:', error);
+    return NextResponse.json({ success: false, error: 'Erreur serveur' }, { status: 500 });
+  }
+}
 
 export async function POST(request: NextRequest) {
   const userCookie = request.cookies.get('mmotors_user');

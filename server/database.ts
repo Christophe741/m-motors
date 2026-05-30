@@ -162,7 +162,12 @@ export async function getVehicleById(id: string): Promise<Vehicule | null> {
 export async function getDossierById(id: string): Promise<Dossier | null> {
   const dossier = await prisma.dossier.findUnique({
     where: { id },
-    include: { documents: true, contrat_location: true },
+    include: {
+      documents: true,
+      contrat_location: true,
+      client: { select: { id: true, email: true, nom: true, prenom: true, telephone: true, adresse: true, role: true, created_at: true } },
+      vehicule: true,
+    },
   });
 
   if (!dossier) return null;
@@ -180,7 +185,57 @@ export async function getDossierById(id: string): Promise<Dossier | null> {
       prix_rachat: toNumber(dossier.contrat_location.prix_rachat),
       created_at: dossier.contrat_location.created_at.toISOString(),
     } : undefined,
-  } as Dossier;
+  } as unknown as Dossier;
+}
+
+export async function getDossiersByClientId(clientId: string): Promise<Dossier[]> {
+  const dossiers = await prisma.dossier.findMany({
+    where: { client_id: clientId },
+    include: { documents: true, contrat_location: true },
+    orderBy: { date_creation: 'desc' },
+  });
+
+  return dossiers.map((d) => ({
+    ...d,
+    date_creation: d.date_creation.toISOString(),
+    date_modification: d.date_modification.toISOString(),
+    documents: d.documents.map((doc) => ({
+      ...doc,
+      date_upload: doc.date_upload.toISOString(),
+    })),
+    contrat_location: d.contrat_location ? {
+      ...d.contrat_location,
+      prix_rachat: toNumber(d.contrat_location.prix_rachat),
+      created_at: d.contrat_location.created_at.toISOString(),
+    } : undefined,
+  })) as unknown as Dossier[];
+}
+
+export async function getAllDossiers(): Promise<Dossier[]> {
+  const dossiers = await prisma.dossier.findMany({
+    include: {
+      documents: true,
+      contrat_location: true,
+      client: { select: { id: true, email: true, nom: true, prenom: true, telephone: true, adresse: true, role: true, created_at: true } },
+      vehicule: { select: { id: true, marque: true, modele: true } },
+    },
+    orderBy: { date_creation: 'desc' },
+  });
+
+  return dossiers.map((d) => ({
+    ...d,
+    date_creation: d.date_creation.toISOString(),
+    date_modification: d.date_modification.toISOString(),
+    documents: d.documents.map((doc) => ({
+      ...doc,
+      date_upload: doc.date_upload.toISOString(),
+    })),
+    contrat_location: d.contrat_location ? {
+      ...d.contrat_location,
+      prix_rachat: toNumber(d.contrat_location.prix_rachat),
+      created_at: d.contrat_location.created_at.toISOString(),
+    } : undefined,
+  })) as unknown as Dossier[];
 }
 
 // ============================================
