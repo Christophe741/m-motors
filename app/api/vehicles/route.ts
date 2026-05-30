@@ -18,11 +18,17 @@ export async function GET(request: NextRequest) {
     const marque = searchParams.get("marque");
     if (marque) filters.marque = marque;
 
+    const prix_min = searchParams.get("prix_min");
+    if (prix_min) filters.prix_min = parseInt(prix_min, 10);
+
     const prix_max = searchParams.get("prix_max");
     if (prix_max) filters.prix_max = parseInt(prix_max, 10);
 
     const annee_min = searchParams.get("annee_min");
     if (annee_min) filters.annee_min = parseInt(annee_min, 10);
+
+    const annee_max = searchParams.get("annee_max");
+    if (annee_max) filters.annee_max = parseInt(annee_max, 10);
 
     const kilometrage_max = searchParams.get("kilometrage_max");
     if (kilometrage_max) filters.kilometrage_max = parseInt(kilometrage_max, 10);

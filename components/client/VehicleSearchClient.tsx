@@ -190,33 +190,59 @@ export default function VehicleSearchClient({
               </div>
 
               <div className="space-y-2">
-                <Label>Prix maximum</Label>
-                <Input
-                  type="number"
-                  placeholder="Ex: 25000"
-                  value={filters.prix_max || ""}
-                  onChange={(e) =>
-                    handleFilterChange(
-                      "prix_max",
-                      e.target.value ? Number(e.target.value) : undefined
-                    )
-                  }
-                />
+                <Label>Prix</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Min"
+                    value={filters.prix_min || ""}
+                    onChange={(e) =>
+                      handleFilterChange(
+                        "prix_min",
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
+                    }
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Max"
+                    value={filters.prix_max || ""}
+                    onChange={(e) =>
+                      handleFilterChange(
+                        "prix_max",
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
+                    }
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label>Année minimum</Label>
-                <Input
-                  type="number"
-                  placeholder="Ex: 2020"
-                  value={filters.annee_min || ""}
-                  onChange={(e) =>
-                    handleFilterChange(
-                      "annee_min",
-                      e.target.value ? Number(e.target.value) : undefined
-                    )
-                  }
-                />
+                <Label>Année</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Min"
+                    value={filters.annee_min || ""}
+                    onChange={(e) =>
+                      handleFilterChange(
+                        "annee_min",
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
+                    }
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Max"
+                    value={filters.annee_max || ""}
+                    onChange={(e) =>
+                      handleFilterChange(
+                        "annee_max",
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
+                    }
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">

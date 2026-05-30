@@ -38,8 +38,10 @@ export interface Vehicule {
 export interface VehicleFilters {
   type_offre?: "vente" | "location";
   marque?: string;
+  prix_min?: number;
   prix_max?: number;
   annee_min?: number;
+  annee_max?: number;
   kilometrage_max?: number;
   carburant?: string;
   transmission?: string;

@@ -73,52 +73,66 @@ export async function verifyPassword(
 // ============================================
 
 export async function getVehicles(filters?: VehicleFilters): Promise<Vehicule[]> {
-  const where: Record<string, unknown> = {};
+  const andConditions: Record<string, unknown>[] = [];
 
   if (filters) {
     if (filters.search) {
-      where.OR = [
-        { marque: { contains: filters.search, mode: 'insensitive' } },
-        { modele: { contains: filters.search, mode: 'insensitive' } },
-        { motorisation: { contains: filters.search, mode: 'insensitive' } },
-      ];
+      andConditions.push({
+        OR: [
+          { marque: { contains: filters.search, mode: 'insensitive' } },
+          { modele: { contains: filters.search, mode: 'insensitive' } },
+          { motorisation: { contains: filters.search, mode: 'insensitive' } },
+        ],
+      });
     }
 
     if (filters.type_offre) {
-      where.type_offre = { in: [filters.type_offre, 'vente_location'] };
+      andConditions.push({ type_offre: { in: [filters.type_offre, 'vente_location'] } });
     }
 
     if (filters.marque) {
-      where.marque = filters.marque;
+      andConditions.push({ marque: filters.marque });
     }
 
-    if (filters.prix_max) {
-      where.OR = [
-        { prix_vente: { lte: filters.prix_max } },
-        { prix_location_mensuel: { lte: filters.prix_max } },
-      ];
+    if (filters.prix_min || filters.prix_max) {
+      const priceFilter: Record<string, unknown> = {};
+      if (filters.prix_min) priceFilter.gte = filters.prix_min;
+      if (filters.prix_max) priceFilter.lte = filters.prix_max;
+      andConditions.push({
+        OR: [
+          { prix_vente: priceFilter },
+          { prix_location_mensuel: priceFilter },
+        ],
+      });
     }
 
-    if (filters.annee_min) {
-      where.annee = { gte: filters.annee_min };
+    if (filters.annee_min || filters.annee_max) {
+      const anneeFilter: Record<string, unknown> = {};
+      if (filters.annee_min) anneeFilter.gte = filters.annee_min;
+      if (filters.annee_max) anneeFilter.lte = filters.annee_max;
+      andConditions.push({ annee: anneeFilter });
     }
 
     if (filters.kilometrage_max) {
-      where.kilometrage = { lte: filters.kilometrage_max };
+      andConditions.push({ kilometrage: { lte: filters.kilometrage_max } });
     }
 
     if (filters.carburant) {
-      where.carburant = filters.carburant;
+      andConditions.push({ carburant: filters.carburant });
     }
 
     if (filters.transmission) {
-      where.transmission = filters.transmission;
+      andConditions.push({ transmission: filters.transmission });
     }
 
     if (filters.statut) {
-      where.statut = filters.statut;
+      andConditions.push({ statut: filters.statut });
     }
   }
+
+  const where: Record<string, unknown> = andConditions.length > 0
+    ? { AND: andConditions }
+    : {};
 
   const vehicles = await prisma.vehicule.findMany({
     where,
