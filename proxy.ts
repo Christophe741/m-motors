@@ -17,18 +17,37 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  // Routes dossier — nécessite d'être connecté
-  if (pathname.startsWith('/dossier')) {
+  // Routes admin — nécessite le rôle admin
+  if (pathname.startsWith('/admin')) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+    if (user.role !== 'admin') {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // Routes client authentifié
+  const protectedClientRoutes = ['/dashboard', '/dossier'];
+  const isProtectedClientRoute = protectedClientRoutes.some(route =>
+    pathname.startsWith(route)
+  );
+
+  if (isProtectedClientRoute) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
     return NextResponse.next();
   }
 
-  // Login/Register — redirige vers l'accueil si déjà connecté
+  // Login/Register — redirige si déjà connecté
   if (pathname === '/login' || pathname === '/register') {
     if (user) {
-      return NextResponse.redirect(new URL('/', request.url));
+      if (user.role === 'admin') {
+        return NextResponse.redirect(new URL('/admin/vehicles', request.url));
+      }
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     return NextResponse.next();
   }
