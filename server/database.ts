@@ -191,7 +191,11 @@ export async function getDossierById(id: string): Promise<Dossier | null> {
 export async function getDossiersByClientId(clientId: string): Promise<Dossier[]> {
   const dossiers = await prisma.dossier.findMany({
     where: { client_id: clientId },
-    include: { documents: true, contrat_location: true },
+    include: {
+      documents: true,
+      contrat_location: true,
+      vehicule: { select: { id: true, marque: true, modele: true } },
+    },
     orderBy: { date_creation: 'desc' },
   });
 
