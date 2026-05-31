@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose';
+import type { NextRequest } from 'next/server';
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
@@ -26,4 +27,10 @@ export async function verifyToken(token: string): Promise<JwtPayload | null> {
   } catch {
     return null;
   }
+}
+
+export async function getAuthUser(request: NextRequest): Promise<JwtPayload | null> {
+  const token = request.cookies.get('mmotors_token')?.value;
+  if (!token) return null;
+  return verifyToken(token);
 }
