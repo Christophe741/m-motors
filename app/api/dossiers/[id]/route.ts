@@ -23,6 +23,10 @@ export async function GET(
       );
     }
 
+    if (user.role !== 'admin' && dossier.client_id !== user.sub) {
+      return NextResponse.json({ success: false, error: 'Non autorisé' }, { status: 403 });
+    }
+
     return NextResponse.json({ success: true, data: dossier });
   } catch (error) {
     console.error('Error fetching dossier:', error);
