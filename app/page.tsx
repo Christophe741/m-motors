@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,8 +10,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Car, Shield, Smartphone, CheckCircle, Award } from "lucide-react";
+import { verifyToken } from "@/lib/jwt";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("mmotors_token")?.value;
+  const user = token ? await verifyToken(token) : null;
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -35,9 +40,11 @@ export default function HomePage() {
                     Rechercher un véhicule
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild>
-                  <Link href="/register">Créer un compte</Link>
-                </Button>
+                {!user && (
+                  <Button size="lg" variant="outline" asChild>
+                    <Link href="/register">Créer un compte</Link>
+                  </Button>
+                )}
               </div>
             </div>
           </div>

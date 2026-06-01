@@ -102,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     localStorage.removeItem("mmotors_user");
     toast.success("Vous êtes déconnecté.");
+    window.location.href = "/";
   };
 
   return (
