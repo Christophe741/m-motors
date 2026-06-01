@@ -55,6 +55,12 @@ export async function PATCH(
 
     if (action === 'update_document') {
       const { documentId, statut, commentaire } = updates;
+
+      const document = await prisma.document.findUnique({ where: { id: documentId } });
+      if (!document || document.dossier_id !== id) {
+        return NextResponse.json({ success: false, error: 'Document introuvable' }, { status: 404 });
+      }
+
       await prisma.document.update({
         where: { id: documentId },
         data: { statut, commentaire },
