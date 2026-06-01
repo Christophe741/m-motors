@@ -1,13 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllDossiers, getDossiersByClientId } from '@/server/database';
 import { prisma } from '@/server/prisma';
+import { getAuthUser } from '@/lib/jwt';
 
 export async function GET(request: NextRequest) {
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json({ success: false, error: 'Non autorisé' }, { status: 401 });
+  }
+
   try {
     const clientId = request.nextUrl.searchParams.get('clientId');
 
-    const dossiers = clientId
-      ? await getDossiersByClientId(clientId)
+    // Un client ne peut voir que ses propres dossiers
+    const targetClientId = user.role === 'admin' ? clientId : user.sub;
+
+    const dossiers = targetClientId
+      ? await getDossiersByClientId(targetClientId)
       : await getAllDossiers();
 
     return NextResponse.json({ success: true, data: dossiers, count: dossiers.length });
@@ -18,15 +27,15 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const userCookie = request.cookies.get('mmotors_user');
-  if (!userCookie) {
+  const user = await getAuthUser(request);
+  if (!user) {
     return NextResponse.json({ success: false, error: 'Non autorisé' }, { status: 401 });
   }
 
   try {
     const data = await request.json();
 
-    if (!data.client_id || !data.vehicule_id || !data.type_dossier) {
+    if (!data.vehicule_id || !data.type_dossier) {
       return NextResponse.json(
         { success: false, error: 'Données manquantes' },
         { status: 400 }
@@ -35,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     const dossier = await prisma.dossier.create({
       data: {
-        client_id: data.client_id,
+        client_id: user.sub,
         vehicule_id: data.vehicule_id,
         type_dossier: data.type_dossier,
         statut: 'soumis',
