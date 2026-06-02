@@ -3,6 +3,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { getVehicles, getAllMarques } from "@/server/database";
 
+export const dynamic = "force-dynamic";
+
 export default async function SearchPage() {
   const [initialVehicles, marques] = await Promise.all([
     getVehicles(),
