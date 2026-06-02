@@ -156,6 +156,38 @@ export async function getAllMarques(): Promise<string[]> {
   return vehicles.map((v) => v.marque);
 }
 
+export async function createVehicle(
+  data: Omit<Vehicule, 'id' | 'created_at'>
+): Promise<Vehicule> {
+  const vehicle = await prisma.vehicule.create({
+    data: {
+      marque: data.marque,
+      modele: data.modele,
+      motorisation: data.motorisation,
+      kilometrage: data.kilometrage,
+      annee: data.annee,
+      prix_vente: data.prix_vente ?? null,
+      prix_location_mensuel: data.prix_location_mensuel ?? null,
+      type_offre: data.type_offre,
+      statut: data.statut,
+      photos: data.photos,
+      description: data.description,
+      options: data.options ?? [],
+      carburant: data.carburant,
+      transmission: data.transmission,
+      puissance: data.puissance,
+      couleur: data.couleur,
+    },
+  });
+
+  return {
+    ...vehicle,
+    prix_vente: toNumber(vehicle.prix_vente),
+    prix_location_mensuel: toNumber(vehicle.prix_location_mensuel),
+    created_at: vehicle.created_at.toISOString(),
+  } as Vehicule;
+}
+
 export async function getVehicleById(id: string): Promise<Vehicule | null> {
   const vehicle = await prisma.vehicule.findUnique({ where: { id } });
 

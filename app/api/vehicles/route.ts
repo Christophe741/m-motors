@@ -1,6 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getVehicles } from "@/server/database";
+import { getVehicles, createVehicle } from "@/server/database";
 import { VehicleFilters } from "@/lib/types";
+import { getAuthUser } from "@/lib/jwt";
+
+export async function POST(request: NextRequest) {
+  const user = await getAuthUser(request);
+  if (!user || user.role !== 'admin') {
+    return NextResponse.json({ success: false, error: 'Non autorisé' }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json();
+    const vehicle = await createVehicle(body);
+    return NextResponse.json({ success: true, data: vehicle }, { status: 201 });
+  } catch (error) {
+    console.error("Error creating vehicle:", error);
+    return NextResponse.json(
+      { success: false, error: "Erreur lors de la création du véhicule" },
+      { status: 500 }
+    );
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
