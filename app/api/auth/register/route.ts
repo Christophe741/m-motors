@@ -1,17 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserByEmail, createUser } from '@/server/database';
 import { signToken } from '@/lib/jwt';
+import { z } from 'zod';
+
+const registerSchema = z.object({
+  email: z.string().trim().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Email invalide'),
+  mot_de_passe: z.string().trim().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
+  nom: z.string().trim().min(1, 'Nom requis'),
+  prenom: z.string().trim().min(1, 'Prénom requis'),
+  telephone: z.string().trim().min(10, 'Numéro de téléphone invalide'),
+  adresse: z.string().trim().min(1, 'Adresse requise'),
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const userData = await request.json();
+    const body = await request.json();
+    const parsed = registerSchema.safeParse(body);
 
-    if (!userData.email || !userData.mot_de_passe || !userData.nom || !userData.prenom || !userData.telephone || !userData.adresse) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: 'Tous les champs sont requis' },
+        { success: false, error: parsed.error.issues[0].message },
         { status: 400 }
       );
     }
+
+    const userData = parsed.data;
 
     const existingUser = await getUserByEmail(userData.email);
     if (existingUser) {
