@@ -1,15 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAllOptions } from '@/server/database';
+import { withErrorHandler } from '@/lib/api-handler';
 
-export async function GET() {
-  try {
-    const options = await getAllOptions();
-    return NextResponse.json(options);
-  } catch (error) {
-    console.error('Error fetching options:', error);
-    return NextResponse.json(
-      { error: 'Erreur serveur' },
-      { status: 500 }
-    );
-  }
-}
+export const GET = withErrorHandler(async () => {
+  const options = await getAllOptions();
+  return NextResponse.json(options);
+});

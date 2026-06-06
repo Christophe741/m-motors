@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { withErrorHandler } from '@/lib/api-handler';
 
-export async function POST() {
+export const POST = withErrorHandler(async () => {
   const response = NextResponse.json({ success: true });
   response.cookies.set('mmotors_token', '', {
     httpOnly: true,
@@ -10,4 +11,4 @@ export async function POST() {
     path: '/',
   });
   return response;
-}
+});
