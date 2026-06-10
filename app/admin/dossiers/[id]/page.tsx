@@ -318,6 +318,16 @@ export default function AdminDossierDetailPage({ params }: { params: Promise<{ i
                             <p className="text-sm text-muted-foreground">
                               {doc.fichier_nom} • {formatDate(doc.date_upload)}
                             </p>
+                            {doc.fichier_url && (
+                              <a
+                                href={doc.fichier_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-600 underline hover:text-blue-800"
+                              >
+                                Voir le document
+                              </a>
+                            )}
                             {doc.commentaire && (
                               <p className="text-sm text-red-600 mt-2 italic">{doc.commentaire}</p>
                             )}

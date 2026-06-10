@@ -44,10 +44,12 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       type_dossier: data.type_dossier,
       statut: 'soumis',
       documents: {
-        create: data.documents.map((doc: { type_document: string; fichier_nom: string; fichier_type: string }) => ({
+        create: data.documents.map((doc: { type_document: string; fichier_nom: string; fichier_type: string; fichier_url?: string; fichier_key?: string }) => ({
           type_document: doc.type_document,
           fichier_nom: doc.fichier_nom,
           fichier_type: doc.fichier_type,
+          fichier_url: doc.fichier_url ?? null,
+          fichier_key: doc.fichier_key ?? null,
           statut: 'en_attente',
         })),
       },

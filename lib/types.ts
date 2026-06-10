@@ -102,6 +102,8 @@ export interface Document {
   type_document: TypeDocument;
   fichier_nom: string;
   fichier_type: string;
+  fichier_url?: string | null;
+  fichier_key?: string | null;
   statut: StatutDocument;
   date_upload: string;
   commentaire?: string;

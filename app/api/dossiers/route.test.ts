@@ -96,6 +96,31 @@ describe("POST /api/dossiers", () => {
     expect(prismaMock.dossier.create.mock.calls[0][0].data.client_id).toBe("u1");
   });
 
+  it("persiste l'URL UploadThing du justificatif", async () => {
+    vi.mocked(getAuthUser).mockResolvedValue({ sub: "u1", role: "client" });
+    prismaMock.dossier.create.mockResolvedValue({ id: "d1" });
+
+    await POST(
+      postReq({
+        vehicule_id: "v1",
+        type_dossier: "achat",
+        documents: [
+          {
+            type_document: "identite",
+            fichier_nom: "cni.pdf",
+            fichier_type: "application/pdf",
+            fichier_url: "https://utfs.io/f/abc123",
+            fichier_key: "abc123",
+          },
+        ],
+      })
+    );
+
+    const created = prismaMock.dossier.create.mock.calls[0][0].data.documents.create[0];
+    expect(created.fichier_url).toBe("https://utfs.io/f/abc123");
+    expect(created.fichier_key).toBe("abc123");
+  });
+
   it("ignore le prix_rachat envoyé par le client (fixé par l'admin)", async () => {
     vi.mocked(getAuthUser).mockResolvedValue({ sub: "u1", role: "client" });
     prismaMock.dossier.create.mockResolvedValue({ id: "d1" });

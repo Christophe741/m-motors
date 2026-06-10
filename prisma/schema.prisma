@@ -92,6 +92,8 @@ model Document {
   type_document TypeDocument
   fichier_nom   String
   fichier_type  String
+  fichier_url   String?
+  fichier_key   String?
   statut        StatutDocument @default(en_attente)
   date_upload   DateTime       @default(now())
   commentaire   String?

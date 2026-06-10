@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUploadThing } from '@/lib/uploadthing';
 import { formatPrice, formatKilometrage } from '@/lib/utils';
 import { TypeDocument, TypeDossier, Vehicule, Option } from '@/lib/types';
 import { ArrowLeft, FileText, CheckCircle } from 'lucide-react';
@@ -33,6 +34,15 @@ export default function CreateDossierClient() {
   const [documents, setDocuments] = useState<{ [key in TypeDocument]?: File }>({});
   const [loading, setLoading] = useState(false);
   const [vehicleLoading, setVehicleLoading] = useState(true);
+
+  const { startUpload } = useUploadThing('justificatif', {
+    onUploadError: (e) => {
+      // Fait remonter la vraie cause (token, auth, région...) au lieu d'un
+      // message générique.
+      console.error('UploadThing error:', e);
+      toast.error(`UploadThing : ${e.message}`);
+    },
+  });
 
   // États spécifiques à la location
   const [options, setOptions] = useState<Option[]>([]);
@@ -117,14 +127,25 @@ export default function CreateDossierClient() {
     setLoading(true);
 
     try {
+      // 1. Upload des fichiers vers UploadThing (l'ordre des résultats est
+      //    préservé par rapport au tableau de fichiers envoyé).
+      const entries = Object.entries(documents) as [TypeDocument, File][];
+      const uploaded = await startUpload(entries.map(([, file]) => file));
+      if (!uploaded) {
+        throw new Error("Échec de l'envoi des justificatifs");
+      }
+
+      // 2. On rattache à chaque justificatif l'URL/clé renvoyée par UploadThing.
       const body: Record<string, unknown> = {
         client_id: user.id,
         vehicule_id: vehicleId,
         type_dossier: typeDossier,
-        documents: Object.entries(documents).map(([type, file]) => ({
-          type_document: type as TypeDocument,
-          fichier_nom: (file as File).name,
-          fichier_type: (file as File).type,
+        documents: entries.map(([type, file], i) => ({
+          type_document: type,
+          fichier_nom: file.name,
+          fichier_type: file.type,
+          fichier_url: uploaded[i].ufsUrl,
+          fichier_key: uploaded[i].key,
         })),
       };
 
@@ -318,7 +339,7 @@ export default function CreateDossierClient() {
                   <Input
                     id={docType.value}
                     type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
+                    accept=".pdf,.jpg,.jpeg,.png,.txt"
                     onChange={(e) => handleFileChange(docType.value, e)}
                   />
                   {documents[docType.value] && (

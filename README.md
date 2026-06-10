@@ -13,6 +13,7 @@ Plateforme web pour une concession automobile d'occasion. Permet la recherche de
 | Validation       | Zod 4                                 |
 | Base de données  | PostgreSQL 18 + Prisma ORM 7          |
 | Authentification | JWT (Jose) + cookies HTTP-only        |
+| Stockage fichiers | UploadThing (justificatifs)          |
 | Déploiement      | Vercel                                |
 | Langage          | TypeScript 5                          |
 
@@ -23,7 +24,7 @@ Plateforme web pour une concession automobile d'occasion. Permet la recherche de
 - **Catalogue véhicules** — recherche et filtres (marque, prix, année, kilométrage, carburant, transmission)
 - **Offres** — vente, location longue durée, ou les deux
 - **Comptes utilisateurs** — inscription, connexion, rôles `client` / `admin`
-- **Dossiers numériques** — soumission, suivi de statut, gestion des documents
+- **Dossiers numériques** — soumission, suivi de statut, upload des justificatifs (PDF / images / texte via UploadThing)
 - **Espace client** — tableau de bord avec l'historique des demandes
 - **Espace admin** — gestion des dossiers, validation/refus, commentaires, gestion des véhicules
 
@@ -49,7 +50,7 @@ cd m-motors
 cp .env.example .env
 # Windows
 copy .env.example .env
-# Puis renseigner JWT_SECRET dans .env
+# Puis renseigner JWT_SECRET et UPLOADTHING_TOKEN dans .env
 
 # 3. Lancer les services (base de données, migrations, application)
 docker compose up --build -d
@@ -75,7 +76,7 @@ npm install
 cp .env.example .env
 # Windows
 copy .env.example .env
-# Puis renseigner JWT_SECRET dans .env
+# Puis renseigner JWT_SECRET et UPLOADTHING_TOKEN dans .env
 
 # 3. Appliquer les migrations
 npx prisma migrate deploy
@@ -86,6 +87,10 @@ npx tsx prisma/seed.ts
 # 5. Lancer le serveur de développement
 npm run dev
 ```
+
+> **UploadThing** : crée un compte gratuit sur [uploadthing.com](https://uploadthing.com),
+> puis copie le token de ton app (onglet **SDK v7+**) dans `UPLOADTHING_TOKEN`.
+> Sans ce token, l'application fonctionne mais l'upload des justificatifs échoue.
 
 ---
 
@@ -114,7 +119,8 @@ m-motors/
 │   │   ├── auth/             # login, logout, register
 │   │   ├── dossiers/         # CRUD dossiers + documents
 │   │   ├── vehicles/         # Liste, détail et création de véhicules
-│   │   └── options/          # Options de location
+│   │   ├── options/          # Options de location
+│   │   └── uploadthing/      # Upload des justificatifs (file router)
 │   ├── admin/                # Pages protégées (rôle admin)
 │   ├── client/               # Pages protégées (rôle client)
 │   ├── dashboard/            # Tableau de bord client
@@ -130,7 +136,7 @@ m-motors/
 │   ├── client/               # Composants espace client
 │   └── vehicle/              # Composants catalogue
 ├── server/                   # Logique backend (Prisma queries)
-├── lib/                      # Utilitaires (JWT, types, DB)
+├── lib/                      # Utilitaires (JWT, types, DB, client UploadThing)
 ├── contexts/                 # AuthContext (React)
 ├── hooks/                    # Hooks React personnalisés
 ├── prisma/
@@ -158,6 +164,7 @@ m-motors/
 | `GET`   | `/api/dossiers/[id]` | Détail d'un dossier             | JWT + ownership |
 | `PATCH` | `/api/dossiers/[id]` | Modifier statut / document      | JWT + rôle      |
 | `GET`   | `/api/options`       | Lister les options de location  | —               |
+| `GET`/`POST` | `/api/uploadthing` | Upload des justificatifs (UploadThing) | JWT       |
 
 ---
 
