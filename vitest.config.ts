@@ -22,6 +22,10 @@ export default defineConfig({
         "lib/generated/**",
         "lib/db.ts",
         "server/prisma.ts",
+        // Glu SDK UploadThing : branchement du file router et ré-exports typés,
+        // non testables unitairement (comme server/prisma.ts).
+        "app/api/uploadthing/**",
+        "lib/uploadthing.ts",
         "**/*.config.*",
         "**/*.d.ts",
       ],
