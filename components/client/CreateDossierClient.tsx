@@ -38,7 +38,6 @@ export default function CreateDossierClient() {
   const [options, setOptions] = useState<Option[]>([]);
   const [duree, setDuree] = useState(24);
   const [optionAchat, setOptionAchat] = useState(true);
-  const [prixRachat, setPrixRachat] = useState('');
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
   useEffect(() => {
@@ -133,7 +132,6 @@ export default function CreateDossierClient() {
         body.contrat_location = {
           duree_mois: duree,
           option_achat: optionAchat,
-          prix_rachat: prixRachat ? Number(prixRachat) : null,
           options_incluses: selectedOptions,
         };
       }
@@ -251,15 +249,9 @@ export default function CreateDossierClient() {
                 </div>
 
                 {optionAchat && (
-                  <div className="space-y-2">
-                    <Label htmlFor="prix_rachat">Prix de rachat en fin de contrat (optionnel)</Label>
-                    <Input
-                      id="prix_rachat"
-                      type="number"
-                      placeholder="Ex: 15000"
-                      value={prixRachat}
-                      onChange={(e) => setPrixRachat(e.target.value)}
-                    />
+                  <div className="rounded-md border border-dashed bg-slate-50 p-3 text-sm text-muted-foreground">
+                    Le prix de rachat en fin de contrat sera fixé par le concessionnaire
+                    lors de l&apos;étude de votre dossier.
                   </div>
                 )}
 

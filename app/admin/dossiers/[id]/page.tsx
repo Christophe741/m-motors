@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatDate, formatPrice } from '@/lib/utils';
 import { Document, StatutDocument, StatutDossier, TypeDocument } from '@/lib/types';
@@ -56,6 +57,7 @@ export default function AdminDossierDetailPage({ params }: { params: Promise<{ i
   const router = useRouter();
 
   const [commentaire, setCommentaire] = useState('');
+  const [prixRachat, setPrixRachat] = useState('');
   const [loading, setLoading] = useState(false);
   const [dossier, setDossier] = useState<DossierDetail | null>(null);
   const [fetchLoading, setFetchLoading] = useState(true);
@@ -67,6 +69,9 @@ export default function AdminDossierDetailPage({ params }: { params: Promise<{ i
         if (response.ok) {
           const result = await response.json();
           setDossier(result.data);
+          if (result.data?.contrat_location?.prix_rachat) {
+            setPrixRachat(String(result.data.contrat_location.prix_rachat));
+          }
         }
       } catch (error) {
         console.error('Error fetching dossier:', error);
@@ -152,8 +157,31 @@ export default function AdminDossierDetailPage({ params }: { params: Promise<{ i
     }
   };
 
+  const needsPrixRachat = !!dossier.contrat_location?.option_achat;
+
   const handleValidateDossier = async () => {
-    setLoading(true);
+    if (needsPrixRachat) {
+      const prix = Number(prixRachat);
+      if (!Number.isFinite(prix) || prix <= 0) {
+        toast.error('Veuillez saisir un prix de rachat valide avant de valider');
+        return;
+      }
+      setLoading(true);
+      const response = await fetch(`/api/dossiers/${dossier.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set_prix_rachat', prix_rachat: prix }),
+      });
+      if (!response.ok) {
+        toast.error('Erreur lors de l\'enregistrement du prix de rachat');
+        setLoading(false);
+        return;
+      }
+      const result = await response.json();
+      setDossier(result.data);
+    } else {
+      setLoading(true);
+    }
     await updateDossierStatus(dossier.id, 'valide', commentaire || 'Dossier validé');
     toast.success('Dossier validé avec succès !');
     setLoading(false);
@@ -355,6 +383,23 @@ export default function AdminDossierDetailPage({ params }: { params: Promise<{ i
                   <CardTitle>Validation du dossier</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {needsPrixRachat && (
+                    <div className="space-y-2">
+                      <Label htmlFor="prix_rachat">Prix de rachat en fin de contrat (€)</Label>
+                      <Input
+                        id="prix_rachat"
+                        type="number"
+                        min="1"
+                        placeholder="Ex: 15000"
+                        value={prixRachat}
+                        onChange={(e) => setPrixRachat(e.target.value)}
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        Le client a demandé l&apos;option d&apos;achat. Fixez le prix de rachat avant de valider.
+                      </p>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <Label htmlFor="commentaire">Commentaire (optionnel)</Label>
                     <Textarea

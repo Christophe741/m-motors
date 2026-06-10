@@ -61,6 +61,31 @@ export const PATCH = withErrorHandler(async (
       where: { id },
       include: { documents: true, contrat_location: true },
     });
+  } else if (action === 'set_prix_rachat') {
+    const prix = Number(updates.prix_rachat);
+    if (!Number.isFinite(prix) || prix <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'Prix de rachat invalide' },
+        { status: 400 }
+      );
+    }
+
+    const contrat = await prisma.contratLocation.findUnique({ where: { dossier_id: id } });
+    if (!contrat) {
+      return NextResponse.json(
+        { success: false, error: 'Ce dossier n\'a pas de contrat de location' },
+        { status: 404 }
+      );
+    }
+
+    await prisma.contratLocation.update({
+      where: { dossier_id: id },
+      data: { prix_rachat: prix },
+    });
+    dossier = await prisma.dossier.findUnique({
+      where: { id },
+      include: { documents: true, contrat_location: true },
+    });
   } else {
     dossier = await prisma.dossier.update({
       where: { id },

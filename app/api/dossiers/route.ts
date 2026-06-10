@@ -51,8 +51,16 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
           statut: 'en_attente',
         })),
       },
+      // On ne recopie jamais prix_rachat depuis le client : c'est l'admin qui
+      // le fixe lors de la validation (action set_prix_rachat sur le PATCH).
       ...(data.contrat_location && {
-        contrat_location: { create: data.contrat_location },
+        contrat_location: {
+          create: {
+            duree_mois: data.contrat_location.duree_mois,
+            option_achat: Boolean(data.contrat_location.option_achat),
+            options_incluses: data.contrat_location.options_incluses ?? [],
+          },
+        },
       }),
     },
     include: { documents: true, contrat_location: true },

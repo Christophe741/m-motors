@@ -897,7 +897,8 @@ const contratsLocation = [
     dossier_id: "dos-2",
     duree_mois: 24,
     option_achat: true,
-    prix_rachat: 15000,
+    // prix_rachat fixé par l'admin à la validation (dossier encore en_cours)
+    prix_rachat: null,
     options_incluses: ["opt-1", "opt-2", "opt-3", "opt-4"],
   },
   {
@@ -913,7 +914,8 @@ const contratsLocation = [
     dossier_id: "dos-5",
     duree_mois: 12,
     option_achat: true,
-    prix_rachat: 20000,
+    // prix_rachat fixé par l'admin à la validation (dossier encore brouillon)
+    prix_rachat: null,
     options_incluses: ["opt-1", "opt-3"],
   },
   {
