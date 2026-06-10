@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Footer() {
   return (
     <footer className="border-t bg-slate-50 mt-auto">
@@ -31,7 +33,12 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t text-center text-sm text-muted-foreground">
+        <div className="mt-8 pt-6 border-t text-center text-sm text-muted-foreground space-y-2">
+          <p>
+            <Link href="/mentions-legales" className="hover:text-primary transition">
+              Mentions légales
+            </Link>
+          </p>
           <p>
             &copy; {new Date().getFullYear()} M-Motors. Tous droits réservés.
           </p>
