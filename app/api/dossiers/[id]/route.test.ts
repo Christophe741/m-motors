@@ -7,6 +7,7 @@ vi.mock("@/lib/jwt", () => ({ getAuthUser: vi.fn() }));
 const prismaMock = vi.hoisted(() => ({
   document: { findUnique: vi.fn(), update: vi.fn() },
   dossier: { findUnique: vi.fn(), update: vi.fn() },
+  contratLocation: { findUnique: vi.fn(), update: vi.fn() },
 }));
 vi.mock("@/server/prisma", () => ({ prisma: prismaMock }));
 
@@ -95,6 +96,43 @@ describe("PATCH /api/dossiers/[id]", () => {
     prismaMock.document.findUnique.mockResolvedValue({ id: "doc1", dossier_id: "AUTRE" });
     const res = await PATCH(
       req({ action: "update_document", documentId: "doc1" }),
+      ctx("d1")
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("fixe le prix de rachat (action admin set_prix_rachat)", async () => {
+    vi.mocked(getAuthUser).mockResolvedValue({ sub: "a1", role: "admin" });
+    prismaMock.contratLocation.findUnique.mockResolvedValue({ id: "c1", dossier_id: "d1" });
+    prismaMock.contratLocation.update.mockResolvedValue({});
+    prismaMock.dossier.findUnique.mockResolvedValue({ id: "d1" });
+
+    const res = await PATCH(
+      req({ action: "set_prix_rachat", prix_rachat: 15000 }),
+      ctx("d1")
+    );
+    expect((await res.json()).success).toBe(true);
+    expect(prismaMock.contratLocation.update).toHaveBeenCalledWith({
+      where: { dossier_id: "d1" },
+      data: { prix_rachat: 15000 },
+    });
+  });
+
+  it("retourne 400 si le prix de rachat est invalide", async () => {
+    vi.mocked(getAuthUser).mockResolvedValue({ sub: "a1", role: "admin" });
+    const res = await PATCH(
+      req({ action: "set_prix_rachat", prix_rachat: 0 }),
+      ctx("d1")
+    );
+    expect(res.status).toBe(400);
+    expect(prismaMock.contratLocation.update).not.toHaveBeenCalled();
+  });
+
+  it("retourne 404 si le dossier n'a pas de contrat de location", async () => {
+    vi.mocked(getAuthUser).mockResolvedValue({ sub: "a1", role: "admin" });
+    prismaMock.contratLocation.findUnique.mockResolvedValue(null);
+    const res = await PATCH(
+      req({ action: "set_prix_rachat", prix_rachat: 15000 }),
       ctx("d1")
     );
     expect(res.status).toBe(404);

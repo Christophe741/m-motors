@@ -96,6 +96,26 @@ describe("POST /api/dossiers", () => {
     expect(prismaMock.dossier.create.mock.calls[0][0].data.client_id).toBe("u1");
   });
 
+  it("ignore le prix_rachat envoyé par le client (fixé par l'admin)", async () => {
+    vi.mocked(getAuthUser).mockResolvedValue({ sub: "u1", role: "client" });
+    prismaMock.dossier.create.mockResolvedValue({ id: "d1" });
+
+    await POST(
+      postReq({
+        vehicule_id: "v1",
+        type_dossier: "location",
+        documents: [],
+        contrat_location: { duree_mois: 24, option_achat: true, prix_rachat: 1 },
+      })
+    );
+
+    const createData = prismaMock.dossier.create.mock.calls[0][0].data;
+    // Le contrat est bien créé mais sans le prix_rachat fourni par le client
+    expect(createData.contrat_location.create.duree_mois).toBe(24);
+    expect(createData.contrat_location.create.option_achat).toBe(true);
+    expect(createData.contrat_location.create).not.toHaveProperty("prix_rachat");
+  });
+
   it("retourne 500 en cas d'erreur", async () => {
     vi.mocked(getAuthUser).mockResolvedValue({ sub: "u1", role: "client" });
     prismaMock.dossier.create.mockRejectedValue(new Error("boom"));
