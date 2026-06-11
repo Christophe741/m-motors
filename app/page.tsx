@@ -22,26 +22,32 @@ export default async function HomePage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-linear-to-b from-slate-50 to-white py-10 md:py-20">
-          <div className="container mx-auto px-4">
+        <section className="relative overflow-hidden bg-[url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center py-10 md:py-20">
+          <div aria-hidden="true" className="absolute inset-0 bg-slate-900/70" />
+          <div className="container relative mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
-              <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">
+              <h1 className="text-3xl md:text-5xl font-bold text-white mb-6">
                 Trouvez votre véhicule idéal
               </h1>
-              <p className="text-lg md:text-xl text-slate-600 mb-8">
+              <p className="text-lg md:text-xl text-slate-200 mb-8">
                 Spécialiste en vente et location longue durée de véhicules
                 d'occasion depuis 1987. Plus de 1 million de clients nous font
                 confiance.
               </p>
               <div className="flex gap-4 justify-center flex-wrap">
-                <Button size="lg" asChild>
+                <Button size="lg" variant="secondary" asChild>
                   <Link href="/search">
                     <Car className="mr-2 h-5 w-5" />
                     Rechercher un véhicule
                   </Link>
                 </Button>
                 {!user && (
-                  <Button size="lg" variant="outline" asChild>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
+                    asChild
+                  >
                     <Link href="/register">Créer un compte</Link>
                   </Button>
                 )}
