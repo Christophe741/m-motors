@@ -86,7 +86,7 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
         </div>
       </CardContent>
 
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="p-4 pt-0 mt-auto">
         <Button asChild className="w-full">
           <Link href={`/vehicle/${vehicle.id}`}>Voir les détails</Link>
         </Button>
