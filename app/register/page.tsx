@@ -74,8 +74,8 @@ export default function RegisterPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+              <CardHeader className="text-center">
+                <CardTitle className="flex items-center justify-center gap-2">
                   <UserPlus className="h-5 w-5" />
                   Créer un compte
                 </CardTitle>

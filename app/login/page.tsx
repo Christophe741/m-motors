@@ -54,8 +54,8 @@ export default function LoginPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+              <CardHeader className="text-center">
+                <CardTitle className="flex items-center justify-center gap-2">
                   <LogIn className="h-5 w-5" />
                   Connexion
                 </CardTitle>
