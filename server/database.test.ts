@@ -156,7 +156,19 @@ describe("getVehicles", () => {
   it("gère prix_min seul (sans prix_max)", async () => {
     await getVehicles({ prix_min: 5000 });
     const where = prismaMock.vehicule.findMany.mock.calls[0][0].where;
-    expect(where.AND[0].OR[0].prix_vente).toEqual({ gte: 5000 });
+    expect(where.AND[0]).toEqual({ prix_vente: { gte: 5000 } });
+  });
+
+  it("filtre le prix sur prix_vente par défaut, sans toucher au loyer", async () => {
+    await getVehicles({ prix_max: 10000 });
+    const where = prismaMock.vehicule.findMany.mock.calls[0][0].where;
+    expect(where.AND[0]).toEqual({ prix_vente: { lte: 10000 } });
+  });
+
+  it("filtre le prix sur le loyer mensuel quand type_offre est location", async () => {
+    await getVehicles({ type_offre: "location", prix_max: 500 });
+    const where = prismaMock.vehicule.findMany.mock.calls[0][0].where;
+    expect(where.AND).toContainEqual({ prix_location_mensuel: { lte: 500 } });
   });
 });
 

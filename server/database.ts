@@ -98,12 +98,13 @@ export async function getVehicles(filters?: VehicleFilters): Promise<Vehicule[]>
       const priceFilter: Record<string, unknown> = {};
       if (filters.prix_min) priceFilter.gte = filters.prix_min;
       if (filters.prix_max) priceFilter.lte = filters.prix_max;
-      andConditions.push({
-        OR: [
-          { prix_vente: priceFilter },
-          { prix_location_mensuel: priceFilter },
-        ],
-      });
+      // Le prix de vente et le loyer mensuel n'ont pas la même échelle :
+      // le filtre ne s'applique qu'au prix correspondant au type d'offre
+      // (prix de vente par défaut quand aucun type n'est choisi).
+      const priceField = filters.type_offre === 'location'
+        ? 'prix_location_mensuel'
+        : 'prix_vente';
+      andConditions.push({ [priceField]: priceFilter });
     }
 
     if (filters.annee_min || filters.annee_max) {
