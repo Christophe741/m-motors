@@ -16,36 +16,38 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur-md shadow-md">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-            <Car className="h-6 w-6" />
-            <span>M-Motors</span>
-          </Link>
-
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/search" className="text-sm hover:text-primary transition">
-              Rechercher
+          <div className="flex items-center gap-8">
+            <Link href="/" className="flex items-center gap-2 font-bold text-xl">
+              <Car className="h-6 w-6" />
+              <span>M-Motors</span>
             </Link>
-            {user && (
-              <>
-                {user.role === "client" && (
-                  <Link href="/dashboard" className="text-sm hover:text-primary transition">
-                    Mes dossiers
-                  </Link>
-                )}
-                {user.role === "admin" && (
-                  <>
-                    <Link href="/admin/vehicles" className="text-sm hover:text-primary transition">
-                      Véhicules
+
+            {/* Desktop nav */}
+            <nav className="hidden md:flex items-center gap-6">
+              <Link href="/search" className="text-sm hover:text-primary transition">
+                Rechercher
+              </Link>
+              {user && (
+                <>
+                  {user.role === "client" && (
+                    <Link href="/dashboard" className="text-sm hover:text-primary transition">
+                      Mes dossiers
                     </Link>
-                    <Link href="/admin/dossiers" className="text-sm hover:text-primary transition">
-                      Dossiers
-                    </Link>
-                  </>
-                )}
-              </>
-            )}
-          </nav>
+                  )}
+                  {user.role === "admin" && (
+                    <>
+                      <Link href="/admin/vehicles" className="text-sm hover:text-primary transition">
+                        Véhicules
+                      </Link>
+                      <Link href="/admin/dossiers" className="text-sm hover:text-primary transition">
+                        Dossiers
+                      </Link>
+                    </>
+                  )}
+                </>
+              )}
+            </nav>
+          </div>
 
           {/* Desktop user actions */}
           <div className="hidden md:flex items-center gap-2">
