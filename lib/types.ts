@@ -34,6 +34,18 @@ export interface Vehicule {
   created_at: string;
 }
 
+// Champs renvoyés dans les listes de véhicules (la description et les
+// options ne sont chargées que sur la page détail)
+export type VehiculeListItem = Omit<Vehicule, "description" | "options">;
+
+// Métadonnées de pagination renvoyées par l'API
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 // Interface pour les filtres de véhicules
 export interface VehicleFilters {
   type_offre?: "vente" | "location";

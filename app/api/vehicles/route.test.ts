@@ -30,18 +30,31 @@ function postReq(body: unknown): NextRequest {
 
 beforeEach(() => vi.clearAllMocks());
 
+// Réponse paginée de getVehicles
+function vehiclesPage(vehicles: unknown[], total = vehicles.length) {
+  return { vehicles, total } as never;
+}
+
 describe("GET /api/vehicles", () => {
-  it("retourne les véhicules avec le compte", async () => {
-    vi.mocked(getVehicles).mockResolvedValue([{ id: "v1" }, { id: "v2" }] as never);
+  it("retourne les véhicules avec le compte et la pagination", async () => {
+    vi.mocked(getVehicles).mockResolvedValue(
+      vehiclesPage([{ id: "v1" }, { id: "v2" }], 30)
+    );
     const res = await GET(getReq());
     const json = await res.json();
     expect(json.success).toBe(true);
     expect(json.count).toBe(2);
+    expect(json.pagination).toEqual({
+      page: 1,
+      limit: 12,
+      total: 30,
+      totalPages: 3,
+    });
   });
 
   it("transforme les paramètres de requête en filtres", async () => {
-    vi.mocked(getVehicles).mockResolvedValue([] as never);
-    await GET(getReq("search=clio&type_offre=vente&prix_min=5000&annee_max=2024"));
+    vi.mocked(getVehicles).mockResolvedValue(vehiclesPage([]));
+    await GET(getReq("search=clio&type_offre=vente&prix_min=5000&annee_max=2024&statut=disponible"));
 
     expect(getVehicles).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -49,14 +62,40 @@ describe("GET /api/vehicles", () => {
         type_offre: "vente",
         prix_min: 5000,
         annee_max: 2024,
-      })
+        statut: "disponible",
+      }),
+      { page: 1, limit: 12 }
     );
   });
 
+  it("transmet page et limit à la couche données", async () => {
+    vi.mocked(getVehicles).mockResolvedValue(vehiclesPage([]));
+    await GET(getReq("page=3&limit=24"));
+    expect(getVehicles).toHaveBeenCalledWith(expect.anything(), { page: 3, limit: 24 });
+  });
+
+  it("plafonne limit et ignore une page invalide", async () => {
+    vi.mocked(getVehicles).mockResolvedValue(vehiclesPage([]));
+    await GET(getReq("page=abc&limit=9999"));
+    expect(getVehicles).toHaveBeenCalledWith(expect.anything(), { page: 1, limit: 100 });
+  });
+
   it("ignore un type_offre invalide", async () => {
-    vi.mocked(getVehicles).mockResolvedValue([] as never);
+    vi.mocked(getVehicles).mockResolvedValue(vehiclesPage([]));
     await GET(getReq("type_offre=nimporte_quoi"));
-    expect(getVehicles).toHaveBeenCalledWith(expect.not.objectContaining({ type_offre: "nimporte_quoi" }));
+    expect(getVehicles).toHaveBeenCalledWith(
+      expect.not.objectContaining({ type_offre: "nimporte_quoi" }),
+      expect.anything()
+    );
+  });
+
+  it("ignore un statut invalide", async () => {
+    vi.mocked(getVehicles).mockResolvedValue(vehiclesPage([]));
+    await GET(getReq("statut=nimporte_quoi"));
+    expect(getVehicles).toHaveBeenCalledWith(
+      expect.not.objectContaining({ statut: "nimporte_quoi" }),
+      expect.anything()
+    );
   });
 
   it("retourne 500 en cas d'erreur", async () => {

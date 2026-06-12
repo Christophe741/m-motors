@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { useVehicles } from '@/hooks';
 import { formatPrice, formatKilometrage } from '@/lib/utils';
 import { Plus, Search } from 'lucide-react';
-import { Vehicule, StatutVehicule } from '@/lib/types';
+import { StatutVehicule, VehicleFilters } from '@/lib/types';
 
 const statutColors: Record<StatutVehicule, 'success' | 'warning' | 'destructive' | 'secondary' | 'default'> = {
   disponible: 'success',
@@ -25,27 +25,38 @@ const statutColors: Record<StatutVehicule, 'success' | 'warning' | 'destructive'
 
 export default function AdminVehiclesPage() {
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterMarque, setFilterMarque] = useState('');
   const [filterStatut, setFilterStatut] = useState('');
+  const [marques, setMarques] = useState<string[]>([]);
 
-  const { vehicles, loading } = useVehicles();
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-  const marques = [...new Set(vehicles.map((v) => v.marque))].sort();
+  useEffect(() => {
+    fetch('/api/marques')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setMarques(data.data);
+      })
+      .catch(() => {});
+  }, []);
 
-  const filteredVehicles = vehicles.filter((v: Vehicule) => {
-    if (search && !(v.marque + ' ' + v.modele).toLowerCase().includes(search.toLowerCase())) {
-      return false;
-    }
-    if (filterMarque && v.marque !== filterMarque) {
-      return false;
-    }
-    if (filterStatut && v.statut !== filterStatut) {
-      return false;
-    }
-    return true;
-  });
+  // Les filtres sont appliqués côté serveur : avec un catalogue paginé,
+  // filtrer en mémoire ne porterait que sur les pages déjà chargées
+  const filters = useMemo<VehicleFilters>(
+    () => ({
+      search: debouncedSearch || undefined,
+      marque: filterMarque || undefined,
+      statut: (filterStatut || undefined) as StatutVehicule | undefined,
+    }),
+    [debouncedSearch, filterMarque, filterStatut]
+  );
 
-  if (loading) return null;
+  const { vehicles, total, loading, loadingMore, hasMore, loadMore } =
+    useVehicles(filters);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -57,7 +68,7 @@ export default function AdminVehiclesPage() {
             <div>
               <h1 className="text-3xl font-bold mb-2">Gestion des Véhicules</h1>
               <p className="text-muted-foreground">
-                {filteredVehicles.length} véhicule{filteredVehicles.length > 1 ? 's' : ''}
+                {total} véhicule{total > 1 ? 's' : ''}
               </p>
             </div>
             <Button asChild>
@@ -133,7 +144,15 @@ export default function AdminVehiclesPage() {
 
           {/* Liste des véhicules */}
           <div className="space-y-4">
-            {filteredVehicles.map((vehicle: Vehicule) => (
+            {loading && (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  Chargement...
+                </CardContent>
+              </Card>
+            )}
+
+            {!loading && vehicles.map((vehicle) => (
               <Card key={vehicle.id} className="hover:shadow-md transition">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
@@ -202,12 +221,22 @@ export default function AdminVehiclesPage() {
               </Card>
             ))}
 
-            {filteredVehicles.length === 0 && (
+            {!loading && vehicles.length === 0 && (
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
                   Aucun véhicule trouvé
                 </CardContent>
               </Card>
+            )}
+
+            {!loading && hasMore && (
+              <div className="text-center pt-2">
+                <Button variant="outline" onClick={loadMore} disabled={loadingMore}>
+                  {loadingMore
+                    ? 'Chargement...'
+                    : `Voir plus (${vehicles.length} sur ${total})`}
+                </Button>
+              </div>
             )}
           </div>
         </div>

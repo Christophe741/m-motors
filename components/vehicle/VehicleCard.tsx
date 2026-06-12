@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Vehicule } from "@/lib/types";
+import { VehiculeListItem } from "@/lib/types";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { formatPrice, formatKilometrage } from "@/lib/utils";
 import { Calendar, Gauge, Fuel, Settings } from "lucide-react";
 
 interface VehicleCardProps {
-  vehicle: Vehicule;
+  vehicle: VehiculeListItem;
 }
 
 export function VehicleCard({ vehicle }: VehicleCardProps) {

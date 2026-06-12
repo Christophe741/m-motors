@@ -4,7 +4,8 @@
  * Cette couche fournit une abstraction pour toutes les opérations de base de données.
  */
 
-import { Dossier, Option, Utilisateur, Vehicule, VehicleFilters } from '@/lib/types';
+import { Dossier, Option, Utilisateur, Vehicule, VehiculeListItem, VehicleFilters } from '@/lib/types';
+import { VEHICLES_PAGE_SIZE, VEHICLES_MAX_PAGE_SIZE } from '@/lib/constants';
 import { prisma } from './prisma';
 import bcrypt from 'bcrypt';
 import type { Decimal } from '@prisma/client/runtime/client';
@@ -72,7 +73,41 @@ export async function verifyPassword(
 // VEHICLE OPERATIONS
 // ============================================
 
-export async function getVehicles(filters?: VehicleFilters): Promise<Vehicule[]> {
+// Champs nécessaires aux cartes/listes : la description et les options
+// ne sont chargées que sur la page détail (getVehicleById)
+const vehicleListSelect = {
+  id: true,
+  marque: true,
+  modele: true,
+  motorisation: true,
+  kilometrage: true,
+  annee: true,
+  prix_vente: true,
+  prix_location_mensuel: true,
+  type_offre: true,
+  statut: true,
+  photos: true,
+  carburant: true,
+  transmission: true,
+  puissance: true,
+  couleur: true,
+  created_at: true,
+} as const;
+
+export interface VehiclesPage {
+  vehicles: VehiculeListItem[];
+  total: number;
+}
+
+export interface VehiclesPagination {
+  page?: number;
+  limit?: number;
+}
+
+export async function getVehicles(
+  filters?: VehicleFilters,
+  pagination?: VehiclesPagination
+): Promise<VehiclesPage> {
   const andConditions: Record<string, unknown>[] = [];
 
   if (filters) {
@@ -94,10 +129,10 @@ export async function getVehicles(filters?: VehicleFilters): Promise<Vehicule[]>
       andConditions.push({ marque: filters.marque });
     }
 
-    if (filters.prix_min || filters.prix_max) {
+    if (filters.prix_min !== undefined || filters.prix_max !== undefined) {
       const priceFilter: Record<string, unknown> = {};
-      if (filters.prix_min) priceFilter.gte = filters.prix_min;
-      if (filters.prix_max) priceFilter.lte = filters.prix_max;
+      if (filters.prix_min !== undefined) priceFilter.gte = filters.prix_min;
+      if (filters.prix_max !== undefined) priceFilter.lte = filters.prix_max;
       // Le prix de vente et le loyer mensuel n'ont pas la même échelle :
       // le filtre ne s'applique qu'au prix correspondant au type d'offre
       // (prix de vente par défaut quand aucun type n'est choisi).
@@ -107,14 +142,14 @@ export async function getVehicles(filters?: VehicleFilters): Promise<Vehicule[]>
       andConditions.push({ [priceField]: priceFilter });
     }
 
-    if (filters.annee_min || filters.annee_max) {
+    if (filters.annee_min !== undefined || filters.annee_max !== undefined) {
       const anneeFilter: Record<string, unknown> = {};
-      if (filters.annee_min) anneeFilter.gte = filters.annee_min;
-      if (filters.annee_max) anneeFilter.lte = filters.annee_max;
+      if (filters.annee_min !== undefined) anneeFilter.gte = filters.annee_min;
+      if (filters.annee_max !== undefined) anneeFilter.lte = filters.annee_max;
       andConditions.push({ annee: anneeFilter });
     }
 
-    if (filters.kilometrage_max) {
+    if (filters.kilometrage_max !== undefined) {
       andConditions.push({ kilometrage: { lte: filters.kilometrage_max } });
     }
 
@@ -135,26 +170,44 @@ export async function getVehicles(filters?: VehicleFilters): Promise<Vehicule[]>
     ? { AND: andConditions }
     : {};
 
-  const vehicles = await prisma.vehicule.findMany({
-    where,
-    orderBy: { created_at: 'desc' },
-  });
+  const page = Math.max(1, pagination?.page ?? 1);
+  const limit = Math.min(
+    Math.max(1, pagination?.limit ?? VEHICLES_PAGE_SIZE),
+    VEHICLES_MAX_PAGE_SIZE
+  );
 
-  return vehicles.map((v) => ({
-    ...v,
-    prix_vente: toNumber(v.prix_vente),
-    prix_location_mensuel: toNumber(v.prix_location_mensuel),
-    created_at: v.created_at.toISOString(),
-  })) as Vehicule[];
+  // Le tri secondaire sur id rend la pagination déterministe
+  // quand plusieurs véhicules partagent le même created_at
+  const [vehicles, total] = await prisma.$transaction([
+    prisma.vehicule.findMany({
+      where,
+      orderBy: [{ created_at: 'desc' }, { id: 'desc' }],
+      select: vehicleListSelect,
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.vehicule.count({ where }),
+  ]);
+
+  return {
+    vehicles: vehicles.map((v) => ({
+      ...v,
+      prix_vente: toNumber(v.prix_vente),
+      prix_location_mensuel: toNumber(v.prix_location_mensuel),
+      created_at: v.created_at.toISOString(),
+    })) as VehiculeListItem[],
+    total,
+  };
 }
 
 export async function getAllMarques(): Promise<string[]> {
-  const vehicles = await prisma.vehicule.findMany({
-    select: { marque: true },
-    distinct: ["marque"],
-    orderBy: { marque: "asc" },
+  // groupBy est exécuté nativement par PostgreSQL, contrairement à
+  // l'option distinct de findMany qui déduplique en mémoire
+  const groups = await prisma.vehicule.groupBy({
+    by: ['marque'],
+    orderBy: { marque: 'asc' },
   });
-  return vehicles.map((v) => v.marque);
+  return groups.map((g) => g.marque);
 }
 
 export async function createVehicle(

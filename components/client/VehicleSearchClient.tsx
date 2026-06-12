@@ -13,41 +13,74 @@ import {
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { VehicleFilters, Vehicule } from "@/lib/types";
+import { VehicleFilters, VehiculeListItem } from "@/lib/types";
+import { VEHICLES_PAGE_SIZE } from "@/lib/constants";
+import { buildVehicleQueryParams } from "@/hooks/useVehicles";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 
 interface VehicleSearchClientProps {
-  initialVehicles: Vehicule[];
+  initialVehicles: VehiculeListItem[];
+  initialTotal: number;
   marques: string[];
 }
 
 export default function VehicleSearchClient({
   initialVehicles,
+  initialTotal,
   marques,
 }: VehicleSearchClientProps) {
-  const [vehicles, setVehicles] = useState<Vehicule[]>(initialVehicles);
+  const [vehicles, setVehicles] = useState<VehiculeListItem[]>(initialVehicles);
+  const [total, setTotal] = useState(initialTotal);
+  const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<VehicleFilters>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Annule la requête précédente pour qu'une réponse lente arrivée en
+  // retard n'écrase pas les résultats du dernier filtre choisi
+  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchVehicles = useCallback(async (filterParams: VehicleFilters) => {
-    const params = new URLSearchParams();
-    Object.entries(filterParams).forEach(([k, v]) => {
-      if (v !== undefined && v !== "") params.append(k, String(v));
-    });
+  const fetchVehicles = useCallback(
+    async (filterParams: VehicleFilters, pageToLoad: number, append: boolean) => {
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
 
-    setIsLoading(true);
-    try {
-      const response = await fetch(`/api/vehicles?${params.toString()}`);
-      const data = await response.json();
-      if (data.success) setVehicles(data.data);
-    } catch (error) {
-      console.error("Error fetching vehicles:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      // Le catalogue public n'affiche que les véhicules disponibles
+      const params = buildVehicleQueryParams(
+        { ...filterParams, statut: "disponible" },
+        pageToLoad,
+        VEHICLES_PAGE_SIZE
+      );
+
+      if (append) {
+        setIsLoadingMore(true);
+      } else {
+        setIsLoading(true);
+      }
+      try {
+        const response = await fetch(`/api/vehicles?${params.toString()}`, {
+          signal: controller.signal,
+        });
+        const data = await response.json();
+        if (data.success) {
+          setVehicles((prev) => (append ? [...prev, ...data.data] : data.data));
+          setTotal(data.pagination?.total ?? data.data.length);
+          setPage(pageToLoad);
+        }
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        console.error("Error fetching vehicles:", error);
+      } finally {
+        if (abortRef.current === controller) {
+          setIsLoading(false);
+          setIsLoadingMore(false);
+        }
+      }
+    },
+    []
+  );
 
   const handleFilterChange = useCallback(
     (key: keyof VehicleFilters, value: string | number | undefined) => {
@@ -58,32 +91,28 @@ export default function VehicleSearchClient({
 
       if (key === "search") {
         debounceTimerRef.current = setTimeout(() => {
-          fetchVehicles(newFilters);
+          fetchVehicles(newFilters, 1, false);
         }, 500);
       } else {
-        fetchVehicles(newFilters);
+        fetchVehicles(newFilters, 1, false);
       }
     },
     [filters, fetchVehicles]
   );
 
-  const resetFilters = useCallback(async () => {
+  const loadMore = useCallback(() => {
+    fetchVehicles(filters, page + 1, true);
+  }, [fetchVehicles, filters, page]);
+
+  const resetFilters = useCallback(() => {
     setFilters({});
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/vehicles");
-      const data = await response.json();
-      if (data.success) setVehicles(data.data);
-    } catch (error) {
-      console.error("Error fetching vehicles:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    fetchVehicles({}, 1, false);
+  }, [fetchVehicles]);
 
   useEffect(() => {
     return () => {
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      abortRef.current?.abort();
     };
   }, []);
 
@@ -92,8 +121,8 @@ export default function VehicleSearchClient({
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Rechercher un véhicule</h1>
         <p className="text-muted-foreground">
-          Trouvez votre véhicule parmi notre sélection de {vehicles.length}{" "}
-          véhicules disponibles
+          Trouvez votre véhicule parmi notre sélection de {total} véhicule
+          {total > 1 ? "s" : ""} disponible{total > 1 ? "s" : ""}
         </p>
       </div>
 
@@ -329,11 +358,26 @@ export default function VehicleSearchClient({
               </CardContent>
             </Card>
           ) : (
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {vehicles.map((vehicle) => (
-                <VehicleCard key={vehicle.id} vehicle={vehicle} />
-              ))}
-            </div>
+            <>
+              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {vehicles.map((vehicle) => (
+                  <VehicleCard key={vehicle.id} vehicle={vehicle} />
+                ))}
+              </div>
+              {vehicles.length < total && (
+                <div className="mt-8 text-center">
+                  <Button
+                    variant="outline"
+                    onClick={loadMore}
+                    disabled={isLoadingMore}
+                  >
+                    {isLoadingMore
+                      ? "Chargement..."
+                      : `Voir plus (${vehicles.length} sur ${total})`}
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -53,6 +53,7 @@ model Vehicule {
   @@index([marque, modele])
   @@index([statut])
   @@index([type_offre])
+  @@index([created_at])
   @@map("vehicules")
 }
 

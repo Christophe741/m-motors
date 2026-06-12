@@ -8,9 +8,18 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // pour qu'il existe au moment où la factory du mock est exécutée.
 const prismaMock = vi.hoisted(() => ({
   utilisateur: { findUnique: vi.fn(), create: vi.fn() },
-  vehicule: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn() },
+  vehicule: {
+    findUnique: vi.fn(),
+    findMany: vi.fn(),
+    count: vi.fn(),
+    groupBy: vi.fn(),
+    create: vi.fn(),
+  },
   dossier: { findUnique: vi.fn(), findMany: vi.fn() },
   option: { findMany: vi.fn() },
+  // $transaction reçoit un tableau de promesses (les appels Prisma sont
+  // déjà déclenchés par les mocks ci-dessus) : on les résout simplement
+  $transaction: vi.fn((operations: Promise<unknown>[]) => Promise.all(operations)),
 }));
 
 vi.mock("@/server/prisma", () => ({ prisma: prismaMock }));
@@ -118,17 +127,41 @@ describe("getVehicles", () => {
         created_at: DATE,
       },
     ]);
+    prismaMock.vehicule.count.mockResolvedValue(1);
   });
 
-  it("sans filtre : where vide et conversion des prix/dates", async () => {
+  it("sans filtre : where vide, pagination par défaut et conversion des prix/dates", async () => {
     const result = await getVehicles();
     expect(prismaMock.vehicule.findMany).toHaveBeenCalledWith({
       where: {},
-      orderBy: { created_at: "desc" },
+      orderBy: [{ created_at: "desc" }, { id: "desc" }],
+      select: expect.any(Object),
+      skip: 0,
+      take: 12,
     });
-    expect(result[0].prix_vente).toBe(15000);
-    expect(result[0].prix_location_mensuel).toBeNull();
-    expect(result[0].created_at).toBe(DATE.toISOString());
+    expect(result.total).toBe(1);
+    expect(result.vehicles[0].prix_vente).toBe(15000);
+    expect(result.vehicles[0].prix_location_mensuel).toBeNull();
+    expect(result.vehicles[0].created_at).toBe(DATE.toISOString());
+  });
+
+  it("applique page et limit (skip/take)", async () => {
+    await getVehicles(undefined, { page: 3, limit: 10 });
+    const arg = prismaMock.vehicule.findMany.mock.calls[0][0];
+    expect(arg.skip).toBe(20);
+    expect(arg.take).toBe(10);
+  });
+
+  it("plafonne limit à 100", async () => {
+    await getVehicles(undefined, { limit: 5000 });
+    expect(prismaMock.vehicule.findMany.mock.calls[0][0].take).toBe(100);
+  });
+
+  it("ne sélectionne pas la description dans les listes", async () => {
+    await getVehicles();
+    const select = prismaMock.vehicule.findMany.mock.calls[0][0].select;
+    expect(select.description).toBeUndefined();
+    expect(select.marque).toBe(true);
   });
 
   it("construit les conditions AND à partir de tous les filtres", async () => {
@@ -222,7 +255,7 @@ describe("getVehicleById", () => {
 
 describe("getAllMarques", () => {
   it("retourne la liste des marques distinctes", async () => {
-    prismaMock.vehicule.findMany.mockResolvedValue([
+    prismaMock.vehicule.groupBy.mockResolvedValue([
       { marque: "Audi" },
       { marque: "BMW" },
     ]);

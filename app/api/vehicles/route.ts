@@ -1,8 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVehicles, createVehicle } from "@/server/database";
-import { VehicleFilters } from "@/lib/types";
+import { StatutVehicule, VehicleFilters } from "@/lib/types";
 import { getAuthUser } from "@/lib/jwt";
 import { withErrorHandler } from "@/lib/api-handler";
+import { VEHICLES_PAGE_SIZE, VEHICLES_MAX_PAGE_SIZE } from "@/lib/constants";
+
+const STATUTS_VALIDES: StatutVehicule[] = [
+  "disponible",
+  "reserve",
+  "vendu",
+  "loue",
+  "maintenance",
+];
+
+function parsePositiveInt(value: string | null): number | undefined {
+  if (!value) return undefined;
+  const parsed = parseInt(value, 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+}
 
 export const POST = withErrorHandler(async (request: NextRequest) => {
   const user = await getAuthUser(request);
@@ -51,11 +66,26 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   const transmission = searchParams.get("transmission");
   if (transmission) filters.transmission = transmission;
 
-  const vehicles = await getVehicles(filters);
+  const statut = searchParams.get("statut") as StatutVehicule | null;
+  if (statut && STATUTS_VALIDES.includes(statut)) filters.statut = statut;
+
+  const page = parsePositiveInt(searchParams.get("page")) ?? 1;
+  const limit = Math.min(
+    parsePositiveInt(searchParams.get("limit")) ?? VEHICLES_PAGE_SIZE,
+    VEHICLES_MAX_PAGE_SIZE
+  );
+
+  const { vehicles, total } = await getVehicles(filters, { page, limit });
 
   return NextResponse.json({
     success: true,
     data: vehicles,
     count: vehicles.length,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
   });
 });
