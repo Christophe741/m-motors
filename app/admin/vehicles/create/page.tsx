@@ -33,7 +33,7 @@ export default function CreateVehiclePage() {
     transmission: 'Manuelle',
     puissance: '',
     couleur: '',
-    photos: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800',
+    photos: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -312,13 +312,9 @@ export default function CreateVehiclePage() {
                       id="photos"
                       name="photos"
                       type="url"
-                      placeholder="https://images.unsplash.com/..."
                       value={formData.photos}
                       onChange={handleChange}
                     />
-                    <p className="text-sm text-muted-foreground">
-                      URL d&apos;une image (Unsplash recommandé pour la démo)
-                    </p>
                   </div>
                 </CardContent>
               </Card>
