@@ -6,16 +6,16 @@ Plateforme web pour une concession automobile d'occasion. Permet la recherche de
 
 ## Stack technique
 
-| Couche           | Technologie                           |
-| ---------------- | ------------------------------------- |
-| Framework        | Next.js 16 (App Router) + React 19    |
-| Styles           | Tailwind CSS 4 + shadcn/ui (Radix UI) |
-| Validation       | Zod 4                                 |
-| Base de données  | PostgreSQL 18 + Prisma ORM 7          |
-| Authentification | JWT (Jose) + cookies HTTP-only        |
-| Stockage fichiers | UploadThing (justificatifs)          |
-| Déploiement      | Vercel                                |
-| Langage          | TypeScript 5                          |
+| Couche            | Technologie                           |
+| ----------------- | ------------------------------------- |
+| Framework         | Next.js 16 (App Router) + React 19    |
+| Styles            | Tailwind CSS 4 + shadcn/ui (Radix UI) |
+| Validation        | Zod 4                                 |
+| Base de données   | PostgreSQL 18 + Prisma ORM 7          |
+| Authentification  | JWT (Jose) + cookies HTTP-only        |
+| Stockage fichiers | UploadThing (justificatifs)           |
+| Déploiement       | Vercel                                |
+| Langage           | TypeScript 5                          |
 
 ---
 
@@ -82,7 +82,7 @@ copy .env.example .env
 npx prisma migrate deploy
 
 # 4. (Optionnel) Peupler la base avec les données de démonstration
-npx tsx prisma/seed.ts
+npx prisma db seed
 
 # 5. Lancer le serveur de développement
 npm run dev
@@ -151,20 +151,20 @@ m-motors/
 
 ## API
 
-| Méthode | Route                | Description                     | Auth            |
-| ------- | -------------------- | ------------------------------- | --------------- |
-| `POST`  | `/api/auth/register` | Créer un compte                 | —               |
-| `POST`  | `/api/auth/login`    | Se connecter                    | —               |
-| `POST`  | `/api/auth/logout`   | Se déconnecter                  | —               |
-| `GET`   | `/api/vehicles`      | Lister les véhicules (filtres)  | —               |
-| `POST`  | `/api/vehicles`      | Créer un véhicule               | JWT + admin     |
-| `GET`   | `/api/vehicles/[id]` | Détail d'un véhicule            | —               |
-| `GET`   | `/api/dossiers`      | Mes dossiers (ou tous si admin) | JWT             |
-| `POST`  | `/api/dossiers`      | Créer un dossier                | JWT             |
-| `GET`   | `/api/dossiers/[id]` | Détail d'un dossier             | JWT + ownership |
-| `PATCH` | `/api/dossiers/[id]` | Modifier statut / document      | JWT + rôle      |
-| `GET`   | `/api/options`       | Lister les options de location  | —               |
-| `GET`/`POST` | `/api/uploadthing` | Upload des justificatifs (UploadThing) | JWT       |
+| Méthode      | Route                | Description                            | Auth            |
+| ------------ | -------------------- | -------------------------------------- | --------------- |
+| `POST`       | `/api/auth/register` | Créer un compte                        | —               |
+| `POST`       | `/api/auth/login`    | Se connecter                           | —               |
+| `POST`       | `/api/auth/logout`   | Se déconnecter                         | —               |
+| `GET`        | `/api/vehicles`      | Lister les véhicules (filtres)         | —               |
+| `POST`       | `/api/vehicles`      | Créer un véhicule                      | JWT + admin     |
+| `GET`        | `/api/vehicles/[id]` | Détail d'un véhicule                   | —               |
+| `GET`        | `/api/dossiers`      | Mes dossiers (ou tous si admin)        | JWT             |
+| `POST`       | `/api/dossiers`      | Créer un dossier                       | JWT             |
+| `GET`        | `/api/dossiers/[id]` | Détail d'un dossier                    | JWT + ownership |
+| `PATCH`      | `/api/dossiers/[id]` | Modifier statut / document             | JWT + rôle      |
+| `GET`        | `/api/options`       | Lister les options de location         | —               |
+| `GET`/`POST` | `/api/uploadthing`   | Upload des justificatifs (UploadThing) | JWT             |
 
 ---
 
