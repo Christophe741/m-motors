@@ -94,22 +94,6 @@ npm run dev
 
 ---
 
-## Données de démonstration (seed)
-
-Le script `prisma/seed.ts` peuple la base avec les données de démonstration :
-
-- **5 utilisateurs** — 1 admin + 4 clients
-- **20 véhicules** — citadines, SUV, berlines (vente, location, ou les deux)
-- **4 options** de location (assurance, assistance, entretien, contrôle technique)
-- **8 dossiers** couvrant tous les statuts (`brouillon`, `soumis`, `en_cours`, `valide`, `refuse`)
-- **17 documents** et **4 contrats** de location associés
-
-```bash
-npx tsx prisma/seed.ts
-```
-
----
-
 ## Structure du projet
 
 ```
