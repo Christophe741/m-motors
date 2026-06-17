@@ -10,6 +10,7 @@ vi.mock("@/lib/jwt", () => ({ getAuthUser: vi.fn() }));
 const prismaMock = vi.hoisted(() => ({
   dossier: { create: vi.fn() },
   option: { findMany: vi.fn() },
+  vehicule: { findUnique: vi.fn() },
 }));
 vi.mock("@/server/prisma", () => ({ prisma: prismaMock }));
 
@@ -31,7 +32,14 @@ function postReq(body: unknown): NextRequest {
   } as unknown as NextRequest;
 }
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  // Par défaut le véhicule existe (snapshot des prix à la soumission)
+  prismaMock.vehicule.findUnique.mockResolvedValue({
+    prix_vente: 20000,
+    prix_location_mensuel: 400,
+  });
+});
 
 describe("GET /api/dossiers", () => {
   it("retourne 401 sans authentification", async () => {
@@ -215,6 +223,55 @@ describe("POST /api/dossiers", () => {
     expect(prismaMock.option.findMany).not.toHaveBeenCalled();
     const createData = prismaMock.dossier.create.mock.calls[0][0].data;
     expect(createData.contrat_location.create.options_incluses).toEqual([]);
+  });
+
+  it("fige le prix de vente du véhicule pour un dossier d'achat", async () => {
+    vi.mocked(getAuthUser).mockResolvedValue({ sub: "u1", role: "client" });
+    prismaMock.dossier.create.mockResolvedValue({ id: "d1" });
+    prismaMock.vehicule.findUnique.mockResolvedValue({
+      prix_vente: 14500,
+      prix_location_mensuel: 295,
+    });
+
+    await POST(
+      postReq({ vehicule_id: "v1", type_dossier: "achat", documents: [] })
+    );
+
+    const createData = prismaMock.dossier.create.mock.calls[0][0].data;
+    expect(createData.prix_vente).toBe(14500);
+  });
+
+  it("fige le loyer mensuel du véhicule pour un dossier de location", async () => {
+    vi.mocked(getAuthUser).mockResolvedValue({ sub: "u1", role: "client" });
+    prismaMock.dossier.create.mockResolvedValue({ id: "d1" });
+    prismaMock.vehicule.findUnique.mockResolvedValue({
+      prix_vente: 14500,
+      prix_location_mensuel: 295,
+    });
+
+    await POST(
+      postReq({
+        vehicule_id: "v1",
+        type_dossier: "location",
+        documents: [],
+        contrat_location: { duree_mois: 24, option_achat: false },
+      })
+    );
+
+    const createData = prismaMock.dossier.create.mock.calls[0][0].data;
+    // Loyer figé sur le contrat, et pas de prix_vente pour une location
+    expect(createData.contrat_location.create.prix_mensuel).toBe(295);
+    expect(createData.prix_vente).toBeNull();
+  });
+
+  it("retourne 404 si le véhicule n'existe pas", async () => {
+    vi.mocked(getAuthUser).mockResolvedValue({ sub: "u1", role: "client" });
+    prismaMock.vehicule.findUnique.mockResolvedValue(null);
+
+    const res = await POST(
+      postReq({ vehicule_id: "inconnu", type_dossier: "achat", documents: [] })
+    );
+    expect(res.status).toBe(404);
   });
 
   it("retourne 500 en cas d'erreur", async () => {

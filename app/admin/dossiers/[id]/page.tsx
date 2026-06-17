@@ -21,10 +21,12 @@ interface DossierDetail {
   type_dossier: 'achat' | 'location';
   statut: StatutDossier;
   commentaire_admin?: string;
+  prix_vente?: number | null;
   documents: Document[];
   contrat_location?: {
     duree_mois: number;
     option_achat: boolean;
+    prix_mensuel?: number | null;
     prix_rachat?: number;
     options_incluses: OptionIncluse[];
   };
@@ -286,7 +288,11 @@ export default function AdminDossierDetailPage({ params }: { params: Promise<{ i
                         {dossier.type_dossier === 'achat' ? 'Prix d\'achat' : 'Location/mois'}
                       </div>
                       <div className="text-2xl font-bold">
-                        {formatPrice(dossier.type_dossier === 'achat' ? vehicule.prix_vente ?? 0 : vehicule.prix_location_mensuel ?? 0)}
+                        {formatPrice(
+                          dossier.type_dossier === 'achat'
+                            ? dossier.prix_vente ?? vehicule.prix_vente ?? 0
+                            : dossier.contrat_location?.prix_mensuel ?? vehicule.prix_location_mensuel ?? 0
+                        )}
                       </div>
                     </div>
                   </div>

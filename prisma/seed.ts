@@ -644,6 +644,7 @@ const dossiers = [
     date_creation: new Date("2025-01-05T14:00:00.000Z"),
     date_modification: new Date("2026-01-11T00:08:49.334Z"),
     commentaire_admin: "Dossier complet et conforme. Validation approuvée.",
+    prix_vente: 14500,
   },
   {
     id: "dos-2",
@@ -675,6 +676,7 @@ const dossiers = [
     date_modification: new Date("2026-01-11T00:08:49.353Z"),
     commentaire_admin:
       "Dossier refusé : carte d'identité expirée. Merci de soumettre un document valide.",
+    prix_vente: 21500,
   },
   {
     id: "dos-5",
@@ -705,6 +707,7 @@ const dossiers = [
     date_creation: new Date("2026-01-11T23:58:03.865Z"),
     date_modification: new Date("2026-01-12T00:21:10.883Z"),
     commentaire_admin: "Dossier validé",
+    prix_vente: 14500,
   },
   {
     id: "dos-8",
@@ -715,6 +718,7 @@ const dossiers = [
     date_creation: new Date("2026-01-12T00:01:44.723Z"),
     date_modification: new Date("2026-01-12T00:20:43.141Z"),
     commentaire_admin: "test",
+    prix_vente: 14500,
   },
 ];
 
@@ -897,9 +901,8 @@ const contratsLocation = [
     dossier_id: "dos-2",
     duree_mois: 24,
     option_achat: true,
-    // prix_rachat fixé par l'admin à la validation (dossier encore en_cours)
+    prix_mensuel: 450,
     prix_rachat: null,
-    // Snapshot figé à la signature (cf. ContratLocation.options_incluses)
     options_incluses: [
       { nom: "Assurance tous risques", prix_mensuel: 50 },
       { nom: "Assistance dépannage 24/7", prix_mensuel: 15 },
@@ -912,6 +915,7 @@ const contratsLocation = [
     dossier_id: "dos-3",
     duree_mois: 36,
     option_achat: false,
+    prix_mensuel: 650,
     prix_rachat: null,
     options_incluses: [
       { nom: "Assurance tous risques", prix_mensuel: 50 },
@@ -923,7 +927,7 @@ const contratsLocation = [
     dossier_id: "dos-5",
     duree_mois: 12,
     option_achat: true,
-    // prix_rachat fixé par l'admin à la validation (dossier encore brouillon)
+    prix_mensuel: 500,
     prix_rachat: null,
     options_incluses: [
       { nom: "Assurance tous risques", prix_mensuel: 50 },
@@ -935,6 +939,7 @@ const contratsLocation = [
     dossier_id: "dos-6",
     duree_mois: 24,
     option_achat: true,
+    prix_mensuel: 295,
     prix_rachat: null,
     options_incluses: [
       { nom: "Assistance dépannage 24/7", prix_mensuel: 15 },

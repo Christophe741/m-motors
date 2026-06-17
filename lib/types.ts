@@ -110,6 +110,7 @@ export interface ContratLocation {
   dossier_id: string;
   duree_mois: number;
   option_achat: boolean;
+  prix_mensuel?: number | null;
   prix_rachat?: number | null;
   options_incluses: OptionIncluse[];
   created_at: string;
@@ -138,6 +139,7 @@ export interface Dossier {
   statut: StatutDossier;
   date_creation: string;
   date_modification: string;
+  prix_vente?: number | null;
   documents: Document[];
   contrat_location?: ContratLocation;
   commentaire_admin?: string;

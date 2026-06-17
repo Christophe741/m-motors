@@ -37,6 +37,20 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     );
   }
 
+  // Snapshot des prix du véhicule au moment de la soumission : on lit le prix
+  // côté serveur (jamais celui du client) pour le figer dans le dossier/contrat.
+  // Le dossier reste ainsi stable même si le catalogue change ensuite.
+  const vehicule = await prisma.vehicule.findUnique({
+    where: { id: data.vehicule_id },
+    select: { prix_vente: true, prix_location_mensuel: true },
+  });
+  if (!vehicule) {
+    return NextResponse.json(
+      { success: false, error: 'Véhicule introuvable' },
+      { status: 404 }
+    );
+  }
+
   // Snapshot des options : le client envoie des IDs d'options, mais on ne les
   // stocke pas tels quels. On va lire le catalogue Option côté serveur (prix de
   // confiance, jamais celui du client) et figer { nom, prix_mensuel } dans le
@@ -60,6 +74,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       vehicule_id: data.vehicule_id,
       type_dossier: data.type_dossier,
       statut: 'soumis',
+      // Prix de vente figé uniquement pour les dossiers d'achat
+      prix_vente: data.type_dossier === 'achat' ? vehicule.prix_vente : null,
       documents: {
         create: data.documents.map((doc: { type_document: string; fichier_nom: string; fichier_type: string; fichier_url?: string; fichier_key?: string }) => ({
           type_document: doc.type_document,
@@ -77,6 +93,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
           create: {
             duree_mois: data.contrat_location.duree_mois,
             option_achat: Boolean(data.contrat_location.option_achat),
+            prix_mensuel: vehicule.prix_location_mensuel,
             options_incluses: optionsSnapshot,
           },
         },

@@ -276,12 +276,14 @@ export async function getDossierById(id: string): Promise<Dossier | null> {
     ...dossier,
     date_creation: dossier.date_creation.toISOString(),
     date_modification: dossier.date_modification.toISOString(),
+    prix_vente: toNumber(dossier.prix_vente),
     documents: dossier.documents.map((doc) => ({
       ...doc,
       date_upload: doc.date_upload.toISOString(),
     })),
     contrat_location: dossier.contrat_location ? {
       ...dossier.contrat_location,
+      prix_mensuel: toNumber(dossier.contrat_location.prix_mensuel),
       prix_rachat: toNumber(dossier.contrat_location.prix_rachat),
       created_at: dossier.contrat_location.created_at.toISOString(),
     } : undefined,
@@ -303,12 +305,14 @@ export async function getDossiersByClientId(clientId: string): Promise<Dossier[]
     ...d,
     date_creation: d.date_creation.toISOString(),
     date_modification: d.date_modification.toISOString(),
+    prix_vente: toNumber(d.prix_vente),
     documents: d.documents.map((doc) => ({
       ...doc,
       date_upload: doc.date_upload.toISOString(),
     })),
     contrat_location: d.contrat_location ? {
       ...d.contrat_location,
+      prix_mensuel: toNumber(d.contrat_location.prix_mensuel),
       prix_rachat: toNumber(d.contrat_location.prix_rachat),
       created_at: d.contrat_location.created_at.toISOString(),
     } : undefined,
@@ -330,12 +334,14 @@ export async function getAllDossiers(): Promise<Dossier[]> {
     ...d,
     date_creation: d.date_creation.toISOString(),
     date_modification: d.date_modification.toISOString(),
+    prix_vente: toNumber(d.prix_vente),
     documents: d.documents.map((doc) => ({
       ...doc,
       date_upload: doc.date_upload.toISOString(),
     })),
     contrat_location: d.contrat_location ? {
       ...d.contrat_location,
+      prix_mensuel: toNumber(d.contrat_location.prix_mensuel),
       prix_rachat: toNumber(d.contrat_location.prix_rachat),
       created_at: d.contrat_location.created_at.toISOString(),
     } : undefined,

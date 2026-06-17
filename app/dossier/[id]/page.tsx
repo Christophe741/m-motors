@@ -207,10 +207,18 @@ export default function DossierDetailPage({
                     </div>
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground">
-                        Prix d&apos;achat
+                        {dossier.type_dossier === "achat"
+                          ? "Prix d'achat"
+                          : "Location/mois"}
                       </div>
                       <div className="text-2xl font-bold">
-                        {formatPrice(vehicle.prix_vente || 0)}
+                        {formatPrice(
+                          dossier.type_dossier === "achat"
+                            ? dossier.prix_vente ?? vehicle.prix_vente ?? 0
+                            : dossier.contrat_location?.prix_mensuel ??
+                                vehicle.prix_location_mensuel ??
+                                0,
+                        )}
                       </div>
                     </div>
                   </div>

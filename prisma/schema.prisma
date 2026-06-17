@@ -76,6 +76,10 @@ model Dossier {
   date_creation     DateTime         @default(now())
   date_modification DateTime         @updatedAt
   commentaire_admin String?
+  // Prix de vente figé à la soumission (dossiers d'achat). Snapshot du prix du
+  // véhicule au moment où le dossier est soumis : reste stable même si le
+  // catalogue change ensuite. Null pour les dossiers de location.
+  prix_vente        Decimal?         @db.Decimal(10, 2)
   contrat_location  ContratLocation?
   documents         Document[]
   client            Utilisateur      @relation(fields: [client_id], references: [id], onDelete: Cascade)
@@ -109,10 +113,8 @@ model ContratLocation {
   dossier_id       String   @unique
   duree_mois       Int
   option_achat     Boolean  @default(false)
+  prix_mensuel     Decimal? @db.Decimal(10, 2)
   prix_rachat      Decimal? @db.Decimal(10, 2)
-  // Snapshot des options souscrites : on fige le nom et le prix au moment de la
-  // signature pour que le contrat reste immuable même si le catalogue Option
-  // change ensuite. Forme : [{ nom: string, prix_mensuel: number }]
   options_incluses Json     @default("[]")
   created_at       DateTime @default(now())
   dossier          Dossier  @relation(fields: [dossier_id], references: [id], onDelete: Cascade)
