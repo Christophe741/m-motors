@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatDate, formatPrice } from '@/lib/utils';
-import { Document, StatutDocument, StatutDossier, TypeDocument } from '@/lib/types';
+import { Document, OptionIncluse, StatutDocument, StatutDossier, TypeDocument } from '@/lib/types';
 import { ArrowLeft, FileText, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -26,6 +26,7 @@ interface DossierDetail {
     duree_mois: number;
     option_achat: boolean;
     prix_rachat?: number;
+    options_incluses: OptionIncluse[];
   };
   client: {
     prenom: string;
@@ -380,6 +381,22 @@ export default function AdminDossierDetailPage({ params }: { params: Promise<{ i
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Prix de rachat</span>
                       <span className="font-medium">{formatPrice(dossier.contrat_location.prix_rachat)}</span>
+                    </div>
+                  )}
+                  {dossier.contrat_location.options_incluses.length > 0 && (
+                    <div className="pt-2 border-t">
+                      <span className="text-muted-foreground">Services inclus</span>
+                      <div className="mt-2 space-y-1">
+                        {dossier.contrat_location.options_incluses.map((opt, i) => (
+                          <div key={i} className="flex justify-between text-sm">
+                            <span className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              {opt.nom}
+                            </span>
+                            <span className="font-medium">{formatPrice(opt.prix_mensuel)}/mois</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </CardContent>
