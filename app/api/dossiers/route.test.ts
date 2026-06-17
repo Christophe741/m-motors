@@ -7,7 +7,10 @@ vi.mock("@/server/database", () => ({
 }));
 vi.mock("@/lib/jwt", () => ({ getAuthUser: vi.fn() }));
 
-const prismaMock = vi.hoisted(() => ({ dossier: { create: vi.fn() } }));
+const prismaMock = vi.hoisted(() => ({
+  dossier: { create: vi.fn() },
+  option: { findMany: vi.fn() },
+}));
 vi.mock("@/server/prisma", () => ({ prisma: prismaMock }));
 
 import { GET, POST } from "@/app/api/dossiers/route";
@@ -139,6 +142,79 @@ describe("POST /api/dossiers", () => {
     expect(createData.contrat_location.create.duree_mois).toBe(24);
     expect(createData.contrat_location.create.option_achat).toBe(true);
     expect(createData.contrat_location.create).not.toHaveProperty("prix_rachat");
+  });
+
+  it("fige un snapshot {nom, prix_mensuel} des options à partir des IDs", async () => {
+    vi.mocked(getAuthUser).mockResolvedValue({ sub: "u1", role: "client" });
+    prismaMock.dossier.create.mockResolvedValue({ id: "d1" });
+    // Le catalogue renvoyé par la base fait foi pour le prix
+    prismaMock.option.findMany.mockResolvedValue([
+      { id: "opt-1", nom: "Assurance tous risques", prix_mensuel: 50 },
+      { id: "opt-2", nom: "Assistance dépannage 24/7", prix_mensuel: 15 },
+    ]);
+
+    await POST(
+      postReq({
+        vehicule_id: "v1",
+        type_dossier: "location",
+        documents: [],
+        contrat_location: {
+          duree_mois: 24,
+          option_achat: false,
+          options_incluses: ["opt-1", "opt-2"],
+        },
+      })
+    );
+
+    const createData = prismaMock.dossier.create.mock.calls[0][0].data;
+    expect(createData.contrat_location.create.options_incluses).toEqual([
+      { nom: "Assurance tous risques", prix_mensuel: 50 },
+      { nom: "Assistance dépannage 24/7", prix_mensuel: 15 },
+    ]);
+  });
+
+  it("ignore les IDs d'options inconnus (pas de référence orpheline)", async () => {
+    vi.mocked(getAuthUser).mockResolvedValue({ sub: "u1", role: "client" });
+    prismaMock.dossier.create.mockResolvedValue({ id: "d1" });
+    prismaMock.option.findMany.mockResolvedValue([
+      { id: "opt-1", nom: "Assurance tous risques", prix_mensuel: 50 },
+    ]);
+
+    await POST(
+      postReq({
+        vehicule_id: "v1",
+        type_dossier: "location",
+        documents: [],
+        contrat_location: {
+          duree_mois: 24,
+          option_achat: false,
+          options_incluses: ["opt-1", "opt-inexistant"],
+        },
+      })
+    );
+
+    const createData = prismaMock.dossier.create.mock.calls[0][0].data;
+    expect(createData.contrat_location.create.options_incluses).toEqual([
+      { nom: "Assurance tous risques", prix_mensuel: 50 },
+    ]);
+  });
+
+  it("ne requête pas le catalogue quand aucune option n'est envoyée", async () => {
+    vi.mocked(getAuthUser).mockResolvedValue({ sub: "u1", role: "client" });
+    prismaMock.dossier.create.mockResolvedValue({ id: "d1" });
+
+    await POST(
+      postReq({
+        vehicule_id: "v1",
+        type_dossier: "location",
+        documents: [],
+        contrat_location: { duree_mois: 24, option_achat: false },
+      })
+    );
+
+    expect(prismaMock.option.findMany).not.toHaveBeenCalled();
+    const createData = prismaMock.dossier.create.mock.calls[0][0].data;
+    expect(createData.contrat_location.create.options_incluses).toEqual([]);
   });
 
   it("retourne 500 en cas d'erreur", async () => {

@@ -110,7 +110,10 @@ model ContratLocation {
   duree_mois       Int
   option_achat     Boolean  @default(false)
   prix_rachat      Decimal? @db.Decimal(10, 2)
-  options_incluses String[]
+  // Snapshot des options souscrites : on fige le nom et le prix au moment de la
+  // signature pour que le contrat reste immuable même si le catalogue Option
+  // change ensuite. Forme : [{ nom: string, prix_mensuel: number }]
+  options_incluses Json     @default("[]")
   created_at       DateTime @default(now())
   dossier          Dossier  @relation(fields: [dossier_id], references: [id], onDelete: Cascade)
 

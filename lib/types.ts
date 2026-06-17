@@ -96,6 +96,14 @@ export interface Option {
   created_at: string;
 }
 
+// Snapshot d'une option figée dans un contrat au moment de la signature.
+// Indépendant de la table Option : le contrat conserve ces valeurs même si
+// l'option est modifiée ou supprimée du catalogue ensuite.
+export interface OptionIncluse {
+  nom: string;
+  prix_mensuel: number;
+}
+
 // Interface ContratLocation
 export interface ContratLocation {
   id: string;
@@ -103,7 +111,7 @@ export interface ContratLocation {
   duree_mois: number;
   option_achat: boolean;
   prix_rachat?: number | null;
-  options_incluses: string[];
+  options_incluses: OptionIncluse[];
   created_at: string;
 }
 

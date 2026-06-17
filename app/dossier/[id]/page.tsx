@@ -393,13 +393,18 @@ export default function DossierDetailPage({
                       <h4 className="font-semibold mb-2">Services inclus</h4>
                       <div className="space-y-1">
                         {dossier.contrat_location.options_incluses.map(
-                          (optId: string) => (
+                          (opt, i) => (
                             <div
-                              key={optId}
-                              className="flex items-center gap-2 text-sm"
+                              key={i}
+                              className="flex items-center justify-between gap-2 text-sm"
                             >
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                              <span>{optId}</span>
+                              <span className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                {opt.nom}
+                              </span>
+                              <span className="text-muted-foreground">
+                                {formatPrice(opt.prix_mensuel)}/mois
+                              </span>
                             </div>
                           ),
                         )}

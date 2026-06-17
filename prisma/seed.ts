@@ -899,7 +899,13 @@ const contratsLocation = [
     option_achat: true,
     // prix_rachat fixé par l'admin à la validation (dossier encore en_cours)
     prix_rachat: null,
-    options_incluses: ["opt-1", "opt-2", "opt-3", "opt-4"],
+    // Snapshot figé à la signature (cf. ContratLocation.options_incluses)
+    options_incluses: [
+      { nom: "Assurance tous risques", prix_mensuel: 50 },
+      { nom: "Assistance dépannage 24/7", prix_mensuel: 15 },
+      { nom: "Entretien et SAV", prix_mensuel: 40 },
+      { nom: "Contrôle technique", prix_mensuel: 10 },
+    ],
   },
   {
     id: "contrat-2",
@@ -907,7 +913,10 @@ const contratsLocation = [
     duree_mois: 36,
     option_achat: false,
     prix_rachat: null,
-    options_incluses: ["opt-1", "opt-2"],
+    options_incluses: [
+      { nom: "Assurance tous risques", prix_mensuel: 50 },
+      { nom: "Assistance dépannage 24/7", prix_mensuel: 15 },
+    ],
   },
   {
     id: "contrat-3",
@@ -916,7 +925,10 @@ const contratsLocation = [
     option_achat: true,
     // prix_rachat fixé par l'admin à la validation (dossier encore brouillon)
     prix_rachat: null,
-    options_incluses: ["opt-1", "opt-3"],
+    options_incluses: [
+      { nom: "Assurance tous risques", prix_mensuel: 50 },
+      { nom: "Entretien et SAV", prix_mensuel: 40 },
+    ],
   },
   {
     id: "contrat-4",
@@ -924,7 +936,12 @@ const contratsLocation = [
     duree_mois: 24,
     option_achat: true,
     prix_rachat: null,
-    options_incluses: ["opt-2", "opt-1", "opt-4", "opt-3"],
+    options_incluses: [
+      { nom: "Assistance dépannage 24/7", prix_mensuel: 15 },
+      { nom: "Assurance tous risques", prix_mensuel: 50 },
+      { nom: "Contrôle technique", prix_mensuel: 10 },
+      { nom: "Entretien et SAV", prix_mensuel: 40 },
+    ],
   },
 ];
 

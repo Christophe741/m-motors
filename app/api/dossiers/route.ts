@@ -37,6 +37,23 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     );
   }
 
+  // Snapshot des options : le client envoie des IDs d'options, mais on ne les
+  // stocke pas tels quels. On va lire le catalogue Option côté serveur (prix de
+  // confiance, jamais celui du client) et figer { nom, prix_mensuel } dans le
+  // contrat. Les IDs inconnus sont ignorés → pas de référence orpheline.
+  let optionsSnapshot: { nom: string; prix_mensuel: number }[] = [];
+  const optionIds: string[] = data.contrat_location?.options_incluses ?? [];
+  if (optionIds.length > 0) {
+    const options = await prisma.option.findMany({
+      where: { id: { in: optionIds } },
+    });
+    const parId = new Map(options.map((o) => [o.id, o]));
+    optionsSnapshot = optionIds
+      .map((id) => parId.get(id))
+      .filter((o): o is NonNullable<typeof o> => Boolean(o))
+      .map((o) => ({ nom: o.nom, prix_mensuel: Number(o.prix_mensuel) }));
+  }
+
   const dossier = await prisma.dossier.create({
     data: {
       client_id: user.sub,
@@ -60,7 +77,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
           create: {
             duree_mois: data.contrat_location.duree_mois,
             option_achat: Boolean(data.contrat_location.option_achat),
-            options_incluses: data.contrat_location.options_incluses ?? [],
+            options_incluses: optionsSnapshot,
           },
         },
       }),
