@@ -27,10 +27,10 @@ export interface Vehicule {
   photos: string[];
   description: string;
   options?: string[];
-  carburant?: string;
-  transmission?: string;
-  puissance?: string;
-  couleur?: string;
+  carburant: string;
+  transmission: string;
+  puissance: string;
+  couleur: string;
   created_at: string;
 }
 

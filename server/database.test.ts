@@ -225,6 +225,10 @@ describe("createVehicle", () => {
       statut: "disponible",
       photos: [],
       description: "",
+      carburant: "Diesel",
+      transmission: "Manuelle",
+      puissance: "90 ch",
+      couleur: "Gris",
     } as Parameters<typeof createVehicle>[0]);
 
     // Valeurs par défaut appliquées : prix_vente -> null, options -> []

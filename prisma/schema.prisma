@@ -43,10 +43,10 @@ model Vehicule {
   photos                String[]
   description           String
   options               String[]
-  carburant             String?
-  transmission          String?
-  puissance             String?
-  couleur               String?
+  carburant             String
+  transmission          String
+  puissance             String
+  couleur               String
   created_at            DateTime       @default(now())
   dossiers              Dossier[]
 
