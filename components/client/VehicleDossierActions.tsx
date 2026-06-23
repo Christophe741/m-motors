@@ -10,13 +10,19 @@ interface VehicleDossierActionsProps {
   vehicleId: string;
   canBuy: boolean;
   canRent: boolean;
+  isAvailable: boolean;
 }
 
-export default function VehicleDossierActions({ vehicleId, canBuy, canRent }: VehicleDossierActionsProps) {
+export default function VehicleDossierActions({ vehicleId, canBuy, canRent, isAvailable }: VehicleDossierActionsProps) {
   const router = useRouter();
   const { user } = useAuth();
 
   const handleCreateDossier = (type: 'achat' | 'location') => {
+    if (!isAvailable) {
+      toast.error("Ce véhicule n'est plus disponible");
+      return;
+    }
+
     if (!user) {
       toast.error('Veuillez vous connecter pour déposer un dossier');
       router.push('/login');
@@ -32,6 +38,14 @@ export default function VehicleDossierActions({ vehicleId, canBuy, canRent }: Ve
   };
 
   if (!canBuy && !canRent) return null;
+
+  if (!isAvailable) {
+    return (
+      <p className="rounded-md bg-muted px-4 py-3 text-sm text-muted-foreground">
+        Ce véhicule n&apos;est plus disponible. Aucun dossier ne peut être déposé.
+      </p>
+    );
+  }
 
   return (
     <div className="space-y-3">

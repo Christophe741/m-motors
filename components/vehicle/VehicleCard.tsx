@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { VehiculeListItem } from "@/lib/types";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice, formatKilometrage } from "@/lib/utils";
 import { Calendar, Gauge, Fuel, Settings } from "lucide-react";
@@ -28,11 +27,6 @@ export function VehicleCard({ vehicle }: VehicleCardProps) {
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
-        <div className="absolute top-2 right-2">
-          <Badge variant="secondary" className="bg-white/90 backdrop-blur">
-            {vehicle.statut === "disponible" ? "Disponible" : vehicle.statut}
-          </Badge>
-        </div>
       </div>
 
       <CardContent className="p-4">

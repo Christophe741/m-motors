@@ -42,12 +42,21 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   // Le dossier reste ainsi stable même si le catalogue change ensuite.
   const vehicule = await prisma.vehicule.findUnique({
     where: { id: data.vehicule_id },
-    select: { prix_vente: true, prix_location_mensuel: true },
+    select: { statut: true, prix_vente: true, prix_location_mensuel: true },
   });
   if (!vehicule) {
     return NextResponse.json(
       { success: false, error: 'Véhicule introuvable' },
       { status: 404 }
+    );
+  }
+
+  // Garde-fou serveur : le blocage côté client peut être contourné par un appel
+  // direct à l'API. Seul un véhicule disponible peut faire l'objet d'un dossier.
+  if (vehicule.statut !== 'disponible') {
+    return NextResponse.json(
+      { success: false, error: "Ce véhicule n'est plus disponible" },
+      { status: 409 }
     );
   }
 

@@ -8,7 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import VehicleImageGallery from "@/components/client/VehicleImageGallery";
 import VehicleDossierActions from "@/components/client/VehicleDossierActions";
 import { getVehicleById } from "@/server/database";
-import { formatPrice, formatKilometrage } from "@/lib/utils";
+import {
+  formatPrice,
+  formatKilometrage,
+  getStatutIndisponibleLabel,
+} from "@/lib/utils";
 import {
   Calendar,
   Gauge,
@@ -35,6 +39,7 @@ export default async function VehicleDetailPage({
   const canRent =
     vehicle.type_offre === "location" ||
     vehicle.type_offre === "vente_location";
+  const isAvailable = vehicle.statut === "disponible";
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -64,19 +69,13 @@ export default async function VehicleDetailPage({
                 <p className="text-lg text-muted-foreground">
                   {vehicle.motorisation}
                 </p>
-                <div className="mt-3">
-                  <Badge
-                    className={
-                      vehicle.statut === "disponible"
-                        ? "bg-green-500 text-white"
-                        : undefined
-                    }
-                  >
-                    {vehicle.statut === "disponible"
-                      ? "Disponible"
-                      : vehicle.statut}
-                  </Badge>
-                </div>
+                {!isAvailable && (
+                  <div className="mt-3">
+                    <Badge variant="secondary">
+                      {getStatutIndisponibleLabel(vehicle.statut)}
+                    </Badge>
+                  </div>
+                )}
               </div>
 
               <Card>
@@ -113,7 +112,12 @@ export default async function VehicleDetailPage({
                 </CardContent>
               </Card>
 
-              <VehicleDossierActions vehicleId={vehicle.id} canBuy={canBuy} canRent={canRent} />
+              <VehicleDossierActions
+                vehicleId={vehicle.id}
+                canBuy={canBuy}
+                canRent={canRent}
+                isAvailable={isAvailable}
+              />
 
               <Card>
                 <CardHeader>

@@ -34,8 +34,9 @@ function postReq(body: unknown): NextRequest {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // Par défaut le véhicule existe (snapshot des prix à la soumission)
+  // Par défaut le véhicule existe et est disponible (snapshot des prix à la soumission)
   prismaMock.vehicule.findUnique.mockResolvedValue({
+    statut: "disponible",
     prix_vente: 20000,
     prix_location_mensuel: 400,
   });
@@ -229,6 +230,7 @@ describe("POST /api/dossiers", () => {
     vi.mocked(getAuthUser).mockResolvedValue({ sub: "u1", role: "client" });
     prismaMock.dossier.create.mockResolvedValue({ id: "d1" });
     prismaMock.vehicule.findUnique.mockResolvedValue({
+      statut: "disponible",
       prix_vente: 14500,
       prix_location_mensuel: 295,
     });
@@ -245,6 +247,7 @@ describe("POST /api/dossiers", () => {
     vi.mocked(getAuthUser).mockResolvedValue({ sub: "u1", role: "client" });
     prismaMock.dossier.create.mockResolvedValue({ id: "d1" });
     prismaMock.vehicule.findUnique.mockResolvedValue({
+      statut: "disponible",
       prix_vente: 14500,
       prix_location_mensuel: 295,
     });
@@ -272,6 +275,21 @@ describe("POST /api/dossiers", () => {
       postReq({ vehicule_id: "inconnu", type_dossier: "achat", documents: [] })
     );
     expect(res.status).toBe(404);
+  });
+
+  it("retourne 409 si le véhicule n'est plus disponible", async () => {
+    vi.mocked(getAuthUser).mockResolvedValue({ sub: "u1", role: "client" });
+    prismaMock.vehicule.findUnique.mockResolvedValue({
+      statut: "reserve",
+      prix_vente: 14500,
+      prix_location_mensuel: 295,
+    });
+
+    const res = await POST(
+      postReq({ vehicule_id: "v1", type_dossier: "achat", documents: [] })
+    );
+    expect(res.status).toBe(409);
+    expect(prismaMock.dossier.create).not.toHaveBeenCalled();
   });
 
   it("retourne 500 en cas d'erreur", async () => {
